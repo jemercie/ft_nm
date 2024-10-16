@@ -1,24 +1,21 @@
-nm is an abreviation for "name mangling" (symbol table) of each object file (binary, library) 
-in the argument list
 
- use:
+### nm
+
+_name mangling_
+
+**use:**
     nm \[*options*\] \[*objfile...\]
 
-3 colonnes:
+###### 3 colonnes:
 
-000000000040037c r __abi_tag
-0000000000407208 B __bss_start
-00000000004031d0 T check_count_option
-0000000000401730 t check_flood_and_interval
-0000000000402f80 t check_id
-00000000004016e0 t check_if_missing_dest_ip
-00000000004017f0 t check_if_print_usage_or_help
+    | virtual adress | symbol type | symbol name |
+    | 000000000040037c| r | __abi_tag |
+    | 0000000000407208| B | __bss_start |
+    | 00000000004031d0| T | check_count_option |
+    | 0000000000401730| t | check_flood_and_interval |
 
-1st: virtual adress
-2nd: symbol type
-3rd: symbol name
 
-types of symbol:
+###### types of symbol:
     A           Absolute symbol, will not be changed by further linking
     B - b       In the uninitialized data section (known as BSS)
     C           Common symbols, uninitialized data. When linking, 
@@ -69,3 +66,4 @@ options cool:
     -n (display in sorted order)
     -g only external symbols (uppercase)
     -S display size
+
