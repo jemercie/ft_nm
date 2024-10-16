@@ -3,7 +3,6 @@
 
 static bool interpret_elf_header(t_file *file);
 
-
 int main(int argc, char **argv){
     t_file file;
 
@@ -22,13 +21,15 @@ static bool interpret_elf_header(t_file *file){
 
     short arch = file->file[EI_CLASS];
     printf("type is: %d\n", arch);
+    
     switch (arch){
-        case _none:
+        case ELFCLASSNONE:
             return FALSE;
-        case _x86_32:
+        case ELFCLASS32:
             return TRUE;
-        case _x64:
+        case ELFCLASS64:
             return TRUE;
     }
     return TRUE;
 }
+
