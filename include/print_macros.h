@@ -13,7 +13,8 @@ fprintf(stderr, "ft_nm : fstat : an error occured getting the file size\n");
 # define PRINT_ERROR_MMAP_FAILED()\
 fprintf(stderr, "ft_nm : mmap : an error occured mapping the file in the memory\n");
 
-
+# define PRINT_SYMBOL_TABLE_LINE() \
+printf("0x16")
 
 
 #endif

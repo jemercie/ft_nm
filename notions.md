@@ -215,12 +215,15 @@ Specifies the alignment requirement for the segment
 
 ## Sections
 
-defined by a section hjeader. Sectuions headers are in an array called the section header table specified in the ELF header (**e_shoff**), it also specifies the size of each program header entry (**e_shentsize**) and the numbre of entries (**e_shnum**)
+defined by a section header. Sections headers are in an array called the section header table 
+specified in the ELF header (**e_shoff**), it also specifies the size of each program header 
+entry (**e_shentsize**) and the numbre of entries (**e_shnum**)
 
+they are used only duriong linking and by tools such as debuggers. During execution and also 
+when reverse engeineering, only the segments count.
 
-they are used only duriong linking and by tools such as debuggers. During execution and also when reverse engeineering, only the segments count.
-
-we can test it : use sstripto remove all sections from an executable and use readelf --sections. It prints an error but our executable still runs just fine
+we can test it : use sstrip to remove all sections from an executable and use readelf --sections.
+ It prints an error but our executable still runs just fine
 
 ```
 typedef struct elf64_shdr {
@@ -237,5 +240,47 @@ typedef struct elf64_shdr {
 } Elf64_Shdr;
 ```
 
+-   sh_name
+    the name of the section, not a string but this index points to the section number string table 
+    (**e_shstrndx** in the elf header) containing the name of the sections. The name (sh_name) just 
+    specifies an offset into that string table.
 
-jpp https://www.youtube.com/watch?v=nC1U1LJQL8o&t=125s 14:49
+-   sh_type
+
+        values:
+            #define SHT_NULL        0   inactive section, can be ignored
+            #define SHT_PROGBITS        1   contains data fior the program, code or variable data or anything, doesnt have a defined format
+            #define SHT_SYMTAB        2 symbol tables contains a list of symbol tables structures, each defining a symbol and their adresses
+            #define SHT_STRTAB        3 
+            #define SHT_RELA        4informations about how to modify different sections when assembling an executable
+            #define SHT_HASH        5 contains a hash table
+            #define SHT_DYNAMIC        6 containe information required for dynamic linking, generally have the same content as PT_DYNAMIC
+            #define SHT_NOTE        7 contain auxiliary informations and notes for use by different tooling
+            #define SHT_NOBITS        8 specialize space for things such as uninitializedvariables
+            #define SHT_REL                9 informations about how to modify different sections when assembling an executable
+            #define SHT_SHLIB        10 reserved and unused
+            #define SHT_DYNSYM        11 symbol tables contains a list of symbol tables structures, each defining a symbol
+
+            #define SHT_NUM                12
+            #define SHT_LOPROC        0x70000000 // ranges for user specific
+            #define SHT_HIPROC        0x7fffffff // and processor specific
+            #define SHT_LOUSER        0x80000000 // sections
+            #define SHT_HIUSER        0xffffffff
+
+-   sh_flags
+    WRITE   
+
+### symbol struct
+
+at sym_table when the section header table (at file\[elf_ehdr.sh_off\]) type (sh_type) == SHT_SYMTAB 
+
+```
+typedef struct elf64_sym {
+  Elf64_Word st_name;                /* Symbol name, index in string tbl */
+  unsigned char        st_info;        /* Type and binding attributes */
+  unsigned char        st_other;        /* No defined meaning, 0 */
+  Elf64_Half st_shndx;                /* Associated section index */
+  Elf64_Addr st_value;                /* Value of the symbol */
+  Elf64_Xword st_size;                /* Associated symbol size */
+} Elf64_Sym;
+```

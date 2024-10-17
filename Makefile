@@ -1,7 +1,8 @@
 NAME			=	ft_nm
 FLAGS			=	-Wall -Wextra -Werror
-SRC				=	src/main.c					\
-					src/open_and_map_file.c		\
+SRC				=	src/main.c								\
+					src/open_and_map_file.c					\
+					src/find_and_print_symbol_table_x64.c	\
 
 OBJ				=	$(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 SRC_DIR			=	src

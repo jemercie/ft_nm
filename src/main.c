@@ -1,6 +1,12 @@
 #include "nm.h"
 # include <sys/mman.h>
 
+/*
+        TODO
+
+*/
+
+
 static bool interpret_elf_header(t_file *file);
 
 int main(int argc, char **argv){
@@ -10,8 +16,6 @@ int main(int argc, char **argv){
         if (open_and_map_file(argv[i], &file)){
             interpret_elf_header(&file);
         }
-        else
-            PRINT_ERROR_OPENING_FILE(argv[i]);
     }
     munmap(file.file, file.infos.st_size);
     return END;
@@ -28,6 +32,7 @@ static bool interpret_elf_header(t_file *file){
         case ELFCLASS32:
             return TRUE;
         case ELFCLASS64:
+        find_and_print_symbol_table_x64(file);
             return TRUE;
     }
     return TRUE;

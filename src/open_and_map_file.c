@@ -27,8 +27,10 @@ bool open_and_map_file(char *filename, t_file *file){
 static bool open_file(char *filename, int *fd){
 
     *fd = open(filename, O_RDONLY);
-    if (*fd < 0)
+    if (*fd < 0){
+        PRINT_ERROR_OPENING_FILE(filename);
         return FALSE;
+    }
     return TRUE;
 }
 
