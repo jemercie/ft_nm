@@ -24,7 +24,6 @@ int main(int argc, char **argv){
 static bool interpret_elf_header(t_file *file){
 
     short arch = file->file[EI_CLASS];
-    printf("type is: %d\n", arch);
     
     switch (arch){
         case ELFCLASSNONE:
@@ -32,7 +31,7 @@ static bool interpret_elf_header(t_file *file){
         case ELFCLASS32:
             return TRUE;
         case ELFCLASS64:
-        find_and_print_symbol_table_x64(file);
+            find_and_print_symbol_table_x64(file);
             return TRUE;
     }
     return TRUE;

@@ -1,5 +1,5 @@
 NAME			=	ft_nm
-FLAGS			=	-Wall -Wextra -Werror
+FLAGS			=	-Wall -Wextra -Werror -g
 SRC				=	src/main.c								\
 					src/open_and_map_file.c					\
 					src/find_and_print_symbol_table_x64.c	\

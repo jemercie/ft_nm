@@ -242,8 +242,7 @@ typedef struct elf64_shdr {
 
 -   sh_name
     the name of the section, not a string but this index points to the section number string table 
-    (**e_shstrndx** in the elf header) containing the name of the sections. The name (sh_name) just 
-    specifies an offset into that string table.
+    (**e_shstrndx** in the elf header) containing the name of the sections. The name (sh_name) just specifies an offset into that string table.
 
 -   sh_type
 
@@ -256,7 +255,7 @@ typedef struct elf64_shdr {
             #define SHT_HASH        5 contains a hash table
             #define SHT_DYNAMIC        6 containe information required for dynamic linking, generally have the same content as PT_DYNAMIC
             #define SHT_NOTE        7 contain auxiliary informations and notes for use by different tooling
-            #define SHT_NOBITS        8 specialize space for things such as uninitializedvariables
+            #define SHT_NOBITS        8 specialize space for things such as uninitialized variables
             #define SHT_REL                9 informations about how to modify different sections when assembling an executable
             #define SHT_SHLIB        10 reserved and unused
             #define SHT_DYNSYM        11 symbol tables contains a list of symbol tables structures, each defining a symbol
@@ -284,3 +283,55 @@ typedef struct elf64_sym {
   Elf64_Xword st_size;                /* Associated symbol size */
 } Elf64_Sym;
 ```
+
+typedef __u64        Elf64_Addr;
+typedef __u16        Elf64_Half;
+typedef __s16        Elf64_SHalf;
+typedef __u64        Elf64_Off;
+typedef __s32        Elf64_Sword;
+typedef __u32        Elf64_Word;
+typedef __u64        Elf64_Xword;
+typedef __s64        Elf64_Sxword;
+
+
+    // if STT_FILE continue
+    // A           Absolute symbol 
+            // 
+    // b B uninitialized data section
+            //  SHT_NOBITS && SHF_ALLOC + SHF_WRITE 
+
+    // C           Common symbols, uninitialized data.
+            // symbol_table[j]->st_shndx == SHN_COMMON
+    // D -  d      In the initialized data section
+            // ELF64_ST_TYPE(symbol_table->st_info) == STT_OBJECT
+
+
+    // G - g       Initialized data section for small objects
+
+
+    // i           For PE format files this indicates that the symbol is in a section specific to the implementation of DLLs
+
+
+    // N           Debugging symbol
+
+
+    // p           The symbols is in a stack unwind section
+
+
+    // R - r       The symbol is in a read only data section
+            //  SHT_PROGBITS && SHF_ALLOC 
+
+    // S - s       The symbol is in an uninitialized data section for small objects
+
+    // T - t       The symbol is in the text (code) section
+            // // ELF64_ST_TYPE(symbol_table->st_info) == STT_FUNC
+
+    // U           Undefined symbol right now
+            // symbol_table[j]->st_shndx == SHN_UNDEF
+
+    // V - v       The symbol is a weak object. When a weak defined symbol is linked with a normal defined symbol,
+
+    // W - w       The symbol is a weak symbol that has not been specifically tagged as a weak object symbol.
+
+    // - The symbol is a stabs symbol in an a.out object file. In this case, the next values printed are the stabs other field, the stabs desc field, and the stab type. Stabs symbols are used to hold debugging information. 
+    // ? The symbol type is unknown, or object file format specific. 

@@ -17,14 +17,15 @@ typedef struct  s_file{
 
 }               t_file;
 
-typedef struct  s_symbol_lst{
+typedef struct  s_symbol{
 
-    uint32_t        *name; // index in the string table
-    unsigned char   *type;
-    char *addr;
-    void *next;
+    int                 index;
+    char                *name;
+    char                symbol;
+    uint64_t            adress;
+    struct s_symbol     *next;
     
-}               t_symbol_lst;
+}               t_symbol;
 
 
 bool open_and_map_file(char *filename, t_file *file);
