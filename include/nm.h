@@ -32,6 +32,7 @@ bool open_and_map_file(char *filename, t_file *file);
                     // open_and_map_file.c
 bool find_and_print_symbol_table_x64(t_file *file);
                     // find_and_print_symbol_table_x64
-
+bool find_and_print_symbol_table_x32(t_file *file);
+                    // find_and_print_symbol_table_x32
 
 #endif

@@ -1,7 +1,7 @@
 #include "nm.h"
 #include <elf.h>
 
-static int get_symtab_index(Elf64_Ehdr *elf_header, Elf64_Shdr *section_hdr_table);
+static int get_symtab_index(Elf32_Ehdr *elf_header, Elf32_Shdr *section_hdr_table);
 static void     lst_add_node_sorted(t_symbol **lst, t_symbol *new);
 static t_symbol *new_symbol_lst_node(char *name, int index, char symbol, uint64_t adress);
 static int strcmp_no_case(char *s1, char *s2);
@@ -10,17 +10,19 @@ static int strcmp_no_case(char *s1, char *s2);
 #include <string.h>
 
 
-static char resolve_symbol_type(Elf64_Sym   *symbol_table, Elf64_Shdr *section_hdr){
+static char resolve_symbol_type(Elf32_Sym   *symbol_table, char *strtab, Elf32_Shdr *section_hdr){
     char c = 'K';
 
-    if (ELF64_ST_BIND(symbol_table->st_info) == STB_GNU_UNIQUE)
+    if (ELF32_ST_BIND(symbol_table->st_info) == STB_GNU_UNIQUE)
         c = 'u';
-    else if (ELF64_ST_BIND(symbol_table->st_info) == STB_WEAK && ELF64_ST_TYPE(symbol_table->st_info) == STT_OBJECT){
+    else if (ELF32_ST_TYPE(symbol_table->st_info) == STT_GNU_IFUNC)
+        c = 'i';
+    else if (ELF32_ST_BIND(symbol_table->st_info) == STB_WEAK && ELF32_ST_TYPE(symbol_table->st_info) == STT_OBJECT){
         c = 'V';
         if (symbol_table->st_shndx == SHN_UNDEF)
             c = 'v';
     }
-    else if (ELF64_ST_BIND(symbol_table->st_info) == STB_WEAK){
+    else if (ELF32_ST_BIND(symbol_table->st_info) == STB_WEAK){
         c = 'W';
         if (symbol_table->st_shndx == SHN_UNDEF)
             c = 'w';
@@ -31,26 +33,35 @@ static char resolve_symbol_type(Elf64_Sym   *symbol_table, Elf64_Shdr *section_h
         c = 'C';
     else if (symbol_table->st_shndx == SHN_UNDEF)
         c = 'U';
-    else if (section_hdr && section_hdr->sh_type == SHT_NOBITS && section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE))
+    else if ((section_hdr && section_hdr->sh_type == SHT_NOBITS && section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE)))
         c = 'B';
-    else if (ELF64_ST_TYPE(symbol_table->st_info) == STT_FUNC || ((section_hdr && section_hdr->sh_type == SHT_PROGBITS)&& section_hdr->sh_flags == (SHF_ALLOC | SHF_EXECINSTR) ))
+    else if (strcmp(strtab + section_hdr->sh_name, ".tdata") == 0 || strcmp(strtab + section_hdr->sh_name, ".tdata1") == 0)
+        c = 'B';
+    else if (ELF32_ST_TYPE(symbol_table->st_info) == STT_TLS )
+    {
+        if ((section_hdr && section_hdr->sh_type == SHT_PROGBITS) && section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE))
+            c = 'D';
+        else
+            c = 'B';
+    }
+    else if (ELF32_ST_TYPE(symbol_table->st_info) == STT_FUNC || ((section_hdr && section_hdr->sh_type == SHT_PROGBITS)&& section_hdr->sh_flags == (SHF_ALLOC | SHF_EXECINSTR)))
         c = 'T';
-    else if (((section_hdr && section_hdr->sh_type == SHT_PROGBITS) || ELF64_ST_TYPE(symbol_table->st_info) == STT_OBJECT) && section_hdr->sh_flags == (SHF_ALLOC))
+    else if (((section_hdr && section_hdr->sh_type == SHT_PROGBITS) || ELF32_ST_TYPE(symbol_table->st_info) == STT_OBJECT) && section_hdr->sh_flags == (SHF_ALLOC))
          c = 'R';
-    else if (ELF64_ST_TYPE(symbol_table->st_info) == STT_OBJECT ||\
+    else if (ELF32_ST_TYPE(symbol_table->st_info) == STT_OBJECT || ELF32_ST_TYPE(symbol_table->st_info) == STT_NOTYPE ||\
         (section_hdr && section_hdr->sh_type == SHT_PROGBITS && section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE))){
         if ((section_hdr->sh_flags & SHF_STRINGS) > 0)
             c = 'R';
         else
             c = 'D';
     }
-    else if (section_hdr->sh_type == SHT_DYNAMIC)
+    else if (section_hdr->sh_type == SHT_DYNAMIC || (section_hdr->sh_flags == SHT_SHLIB))
         c = 'D';
     else if ( c == 'K')
         c = '?';
     // if (section_hdr && section_hdr->sh_type == SHT_PROGBITS && section_hdr->sh_flags == (SHF_ALLOC))
     //     c = 'R';
-    if (ELF64_ST_BIND(symbol_table->st_info) == STB_LOCAL && c != UNDEFINED_SYMBOL)
+    if (ELF32_ST_BIND(symbol_table->st_info) == STB_LOCAL && c != UNDEFINED_SYMBOL)
         c += 32;
 
     return c;
@@ -61,29 +72,29 @@ static char resolve_symbol_type(Elf64_Sym   *symbol_table, Elf64_Shdr *section_h
         // else
 
 
-bool find_and_print_symbol_table_x64(t_file *file){
+bool find_and_print_symbol_table_x32(t_file *file){
 
-    Elf64_Ehdr  *elf_header      = (Elf64_Ehdr *)file->file;
-    Elf64_Shdr  *section_hdr     = (Elf64_Shdr *)&file->file[elf_header->e_shoff];
+    Elf32_Ehdr  *elf_header      = (Elf32_Ehdr *)file->file;
+    Elf32_Shdr  *section_hdr     = (Elf32_Shdr *)&file->file[elf_header->e_shoff];
     int         symtab_index     = get_symtab_index(elf_header, section_hdr);
     if (symtab_index == -1){
         printf("ft_nm: filename: no symbols\n");
         return 0;
     }
-    Elf64_Sym   *symbol_table    = (Elf64_Sym *)(file->file + section_hdr[symtab_index].sh_offset);
+    Elf32_Sym   *symbol_table    = (Elf32_Sym *)(file->file + section_hdr[symtab_index].sh_offset);
 
-    Elf64_Shdr *strtab_section = &section_hdr[section_hdr[symtab_index].sh_link];
+    Elf32_Shdr *strtab_section = &section_hdr[section_hdr[symtab_index].sh_link];
     char *strtab = (char *)(file->file + strtab_section->sh_offset);
 
-    size_t symbols_nb = section_hdr[symtab_index].sh_size / sizeof(Elf64_Sym);
+    size_t symbols_nb = section_hdr[symtab_index].sh_size / sizeof(Elf32_Sym);
 
     t_symbol *lst = NULL;
     t_symbol *new;
     for (size_t j = 1; j < symbols_nb; j++) {
-        if (ELF64_ST_TYPE(symbol_table[j].st_info) == STT_FILE || strlen(strtab+symbol_table[j].st_name) == 0)
+        if (ELF32_ST_TYPE(symbol_table[j].st_info) == STT_FILE || strlen(strtab+symbol_table[j].st_name) == 0)
             continue;
         else{
-            char symbol = resolve_symbol_type(&symbol_table[j], symbol_table[j].st_shndx <= elf_header->e_shnum ? &section_hdr[symbol_table[j].st_shndx] : NULL);
+            char symbol = resolve_symbol_type(&symbol_table[j], strtab, symbol_table[j].st_shndx <= elf_header->e_shnum ? &section_hdr[symbol_table[j].st_shndx] : NULL);
             new = new_symbol_lst_node(strtab+symbol_table[j].st_name, j, symbol, symbol_table[j].st_value); // tester si sh_shndx est pas plus grand 
             lst_add_node_sorted(&lst, new);
 
@@ -92,17 +103,17 @@ bool find_and_print_symbol_table_x64(t_file *file){
     t_symbol *print = lst;
     for (;print; print= print->next){
             if (print->symbol == 'U' || print->symbol == 'w')
-                printf("                 %c %s\n", print->symbol, print->name);
+                printf("         %c %s\n", print->symbol, print->name);
             else
-                printf("%016lx %c %s\n", print->adress, print->symbol, print->name);
+                printf("%08lx %c %s\n", print->adress, print->symbol, print->name);
     }
     return TRUE;
 }
-//symbol_type_to_letter(ELF64_ST_TYPE(symbol_table->st_info)
+//symbol_type_to_letter(Elf32_ST_TYPE(symbol_table->st_info)
 // name = strtab + symbol_table[j].st_name;
 //if (symbol_table->st_info == STB_LOCAL && list->type != '?')
         // list->type += 32;
-//     symbol_label_to_letter(            // if (ELF64_ST_TYPE(symbol_table[j].st_info) == STT_SECTION)
+//     symbol_label_to_letter(            // if (Elf32_ST_TYPE(symbol_table[j].st_info) == STT_SECTION)
             //     printf("%s\n", strtab + section_hdr[symbol_table[j].st_shndx].sh_name);&list->type, symbol_table->st_shndx);
 
 
@@ -123,7 +134,7 @@ static t_symbol *new_symbol_lst_node(char *name, int index, char symbol, uint64_
 }
 
 
-static int get_symtab_index(Elf64_Ehdr *elf_header, Elf64_Shdr *section_hdr_table){
+static int get_symtab_index(Elf32_Ehdr *elf_header, Elf32_Shdr *section_hdr_table){
 
         for (int i = 0; i < elf_header->e_shnum; i++){
         if (section_hdr_table[i].sh_type == SHT_SYMTAB){

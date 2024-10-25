@@ -284,6 +284,12 @@ typedef struct elf64_sym {
 } Elf64_Sym;
 ```
 
+typedef __u32        Elf32_Addr;
+typedef __u16        Elf32_Half;
+typedef __u32        Elf32_Off;
+typedef __s32        Elf32_Sword;
+typedef __u32        Elf32_Word;
+
 typedef __u64        Elf64_Addr;
 typedef __u16        Elf64_Half;
 typedef __s16        Elf64_SHalf;

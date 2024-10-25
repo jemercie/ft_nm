@@ -29,6 +29,7 @@ static bool interpret_elf_header(t_file *file){
         case ELFCLASSNONE:
             return FALSE;
         case ELFCLASS32:
+            find_and_print_symbol_table_x32(file);
             return TRUE;
         case ELFCLASS64:
             find_and_print_symbol_table_x64(file);
