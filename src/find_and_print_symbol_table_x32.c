@@ -33,37 +33,49 @@ static char resolve_symbol_type(Elf32_Sym   *symbol_table, char *strtab, Elf32_S
         c = 'C';
     else if (symbol_table->st_shndx == SHN_UNDEF)
         c = 'U';
-    else if ((section_hdr && section_hdr->sh_type == SHT_NOBITS && section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE)))
-        c = 'B';
-    else if (strcmp(strtab + section_hdr->sh_name, ".tdata") == 0 || strcmp(strtab + section_hdr->sh_name, ".tdata1") == 0)
-        c = 'B';
+    else if (section_hdr && section_hdr->sh_type == SHT_INIT_ARRAY){
+        c = 'D';
+    }
+    else if (symbol_table->st_shndx == SHN_UNDEF){
+        if (section_hdr->sh_type == SHT_PROGBITS && section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE | SHF_TLS))
+            c = 'B';
+        if (section_hdr->sh_type == SHT_NOBITS && section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE | SHF_TLS))
+            c = 'D';
+    }
+    else if (section_hdr->sh_type == SHT_PROGBITS && (section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE )))
+        c = 'D';
     else if (ELF32_ST_TYPE(symbol_table->st_info) == STT_TLS )
     {
         if ((section_hdr && section_hdr->sh_type == SHT_PROGBITS) && section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE))
             c = 'D';
-        else
+        else 
             c = 'B';
     }
+    else if (section_hdr->sh_type == SHT_DYNAMIC || (section_hdr->sh_flags == SHT_SHLIB))
+        c = 'D';
+    else if ((section_hdr && section_hdr->sh_type == SHT_NOBITS && section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE)))
+        c = 'B';
+    else if (strcmp(strtab + section_hdr->sh_name, ".tdata") == 0 || strcmp(strtab + section_hdr->sh_name, ".tdata1") == 0)
+        c = 'B';
     else if (ELF32_ST_TYPE(symbol_table->st_info) == STT_FUNC || ((section_hdr && section_hdr->sh_type == SHT_PROGBITS)&& section_hdr->sh_flags == (SHF_ALLOC | SHF_EXECINSTR)))
         c = 'T';
-    else if (((section_hdr && section_hdr->sh_type == SHT_PROGBITS) || ELF32_ST_TYPE(symbol_table->st_info) == STT_OBJECT) && section_hdr->sh_flags == (SHF_ALLOC))
+    else if (section_hdr && section_hdr->sh_type == SHT_PROGBITS && section_hdr->sh_flags == (SHF_ALLOC) && ELF32_ST_TYPE(symbol_table->st_info) == STT_NOTYPE)
+        c = 'R';
+    else if ((section_hdr && section_hdr->sh_type == SHT_NOTE)|| ((ELF32_ST_TYPE(symbol_table->st_info) == STT_OBJECT) && section_hdr->sh_flags == (SHF_ALLOC)))
          c = 'R';
     else if (ELF32_ST_TYPE(symbol_table->st_info) == STT_OBJECT || ELF32_ST_TYPE(symbol_table->st_info) == STT_NOTYPE ||\
         (section_hdr && section_hdr->sh_type == SHT_PROGBITS && section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE))){
-        if ((section_hdr->sh_flags & SHF_STRINGS) > 0)
+        if ((section_hdr->sh_flags & SHF_STRINGS) > 0 || section_hdr->sh_type == SHT_REL || section_hdr->sh_type == SHT_RELA )
             c = 'R';
         else
             c = 'D';
     }
-    else if (section_hdr->sh_type == SHT_DYNAMIC || (section_hdr->sh_flags == SHT_SHLIB))
-        c = 'D';
     else if ( c == 'K')
         c = '?';
     // if (section_hdr && section_hdr->sh_type == SHT_PROGBITS && section_hdr->sh_flags == (SHF_ALLOC))
     //     c = 'R';
     if (ELF32_ST_BIND(symbol_table->st_info) == STB_LOCAL && c != UNDEFINED_SYMBOL)
         c += 32;
-
     return c;
 }
         // for v and w
@@ -97,6 +109,10 @@ bool find_and_print_symbol_table_x32(t_file *file){
             char symbol = resolve_symbol_type(&symbol_table[j], strtab, symbol_table[j].st_shndx <= elf_header->e_shnum ? &section_hdr[symbol_table[j].st_shndx] : NULL);
             new = new_symbol_lst_node(strtab+symbol_table[j].st_name, j, symbol, symbol_table[j].st_value); // tester si sh_shndx est pas plus grand 
             lst_add_node_sorted(&lst, new);
+            // Elf32_Shdr *section_strtab = &section_hdr[elf_header->e_shstrndx];
+            // char *section_strtab_data = (char *)(file->file + section_strtab->sh_offset);
+            // printf("section header name: %s, symbol table name:%s\n", (char*)section_strtab_data + section_hdr[symbol_table[j].st_shndx].sh_name, strtab+symbol_table[j].st_name);
+            // printf("section header name: %s, symbol table name: %s\n", (char *)(section_strtab_data + section_hdr[symbol_table[j].st_shndx].sh_name), strtab + symbol_table[j].st_name);
 
         }
     }
