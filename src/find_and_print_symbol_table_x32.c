@@ -33,24 +33,29 @@ static char resolve_symbol_type(Elf32_Sym   *symbol_table, char *strtab, Elf32_S
         c = 'C';
     else if (symbol_table->st_shndx == SHN_UNDEF)
         c = 'U';
-    else if (section_hdr && section_hdr->sh_type == SHT_INIT_ARRAY){
-        c = 'D';
-    }
-    else if (symbol_table->st_shndx == SHN_UNDEF){
-        if (section_hdr->sh_type == SHT_PROGBITS && section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE | SHF_TLS))
-            c = 'B';
-        if (section_hdr->sh_type == SHT_NOBITS && section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE | SHF_TLS))
-            c = 'D';
-    }
-    else if (section_hdr->sh_type == SHT_PROGBITS && (section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE )))
-        c = 'D';
     else if (ELF32_ST_TYPE(symbol_table->st_info) == STT_TLS )
     {
-        if ((section_hdr && section_hdr->sh_type == SHT_PROGBITS) && section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE))
+        if ((section_hdr && section_hdr->sh_type == SHT_PROGBITS) && (section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE) ||section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE | SHF_TLS) ))
+            c = 'D';
+        else if (section_hdr && section_hdr->sh_type == SHT_PROGBITS)
+            c = 'B';
+        else if (section_hdr && (section_hdr->sh_type == SHT_INIT_ARRAY || section_hdr->sh_type == SHT_FINI_ARRAY || symbol_table->st_shndx == SHN_ABS))
             c = 'D';
         else 
             c = 'B';
     }
+    else if (symbol_table->st_shndx == SHN_UNDEF || (ELF32_ST_TYPE(symbol_table->st_info) == STT_TLS) ){
+        if (section_hdr->sh_type == SHT_PROGBITS && section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE | SHF_TLS) ) // .tdata -> D initia;ized data section (thread local storage)
+            c = 'D';
+        else if (section_hdr->sh_type == SHT_NOBITS && section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE | SHF_TLS)) // .tbss  -> B uninitialized data section (thread local storage)
+            c = 'B';
+    }
+
+    else if (section_hdr && section_hdr->sh_type == SHT_INIT_ARRAY){
+        c = 'D';
+    }
+    // else if (section_hdr->sh_type == SHT_PROGBITS && (section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE )))
+    //     c = 'a';
     else if (section_hdr->sh_type == SHT_DYNAMIC || (section_hdr->sh_flags == SHT_SHLIB))
         c = 'D';
     else if ((section_hdr && section_hdr->sh_type == SHT_NOBITS && section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE)))
@@ -67,6 +72,8 @@ static char resolve_symbol_type(Elf32_Sym   *symbol_table, char *strtab, Elf32_S
         (section_hdr && section_hdr->sh_type == SHT_PROGBITS && section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE))){
         if ((section_hdr->sh_flags & SHF_STRINGS) > 0 || section_hdr->sh_type == SHT_REL || section_hdr->sh_type == SHT_RELA )
             c = 'R';
+        else if (section_hdr->sh_type == SHT_NOBITS)
+            c = 'B';
         else
             c = 'D';
     }
@@ -111,7 +118,8 @@ bool find_and_print_symbol_table_x32(t_file *file){
             lst_add_node_sorted(&lst, new);
             // Elf32_Shdr *section_strtab = &section_hdr[elf_header->e_shstrndx];
             // char *section_strtab_data = (char *)(file->file + section_strtab->sh_offset);
-            // printf("section header name: %s, symbol table name:%s\n", (char*)section_strtab_data + section_hdr[symbol_table[j].st_shndx].sh_name, strtab+symbol_table[j].st_name);
+            // if (symbol_table[j].st_shndx <= elf_header->e_shnum)
+                // printf("section header name: %s, symbol table name:%s\n", (char*)section_strtab_data + section_hdr[symbol_table[j].st_shndx].sh_name, strtab+symbol_table[j].st_name);
             // printf("section header name: %s, symbol table name: %s\n", (char *)(section_strtab_data + section_hdr[symbol_table[j].st_shndx].sh_name), strtab + symbol_table[j].st_name);
 
         }
@@ -236,15 +244,14 @@ static int strcmp_no_case(char *s1, char *s2) {
         i++;
         j++;
     }
-
-    // Si on sort de la boucle, ça veut dire qu'il y a des caractères restants dans une chaîne
+    j = 0;
+    i = 0;
     // On va vérifier maintenant les caractères non alphanumériques au début des chaînes.
     while (s1[i] && !((s1[i] >= 'A' && s1[i] <= 'Z') || 
                       (s1[i] >= 'a' && s1[i] <= 'z') || 
                       (s1[i] >= '0' && s1[i] <= '9'))) {
         i++;
     }
-    
     while (s2[j] && !((s2[j] >= 'A' && s2[j] <= 'Z') || 
                       (s2[j] >= 'a' && s2[j] <= 'z') || 
                       (s2[j] >= '0' && s2[j] <= '9'))) {
@@ -252,6 +259,8 @@ static int strcmp_no_case(char *s1, char *s2) {
     }
     if (i < j)
         return 1;
+    else if (s1[i] < s2[j])
+        return -1;
     // Une fois que nous avons atteint les caractères non alphanumériques ou la fin, 
     // nous avons déjà comparé les autres caractères.
 
