@@ -276,11 +276,11 @@ at sym_table when the section header table (at file\[elf_ehdr.sh_off\]) type (sh
 ```
 typedef struct elf64_sym {
   Elf64_Word st_name;                /* Symbol name, index in string tbl */
-  unsigned char        st_info;        /* Type and binding attributes */
-  unsigned char        st_other;        /* No defined meaning, 0 */
-  Elf64_Half st_shndx;                /* Associated section index */
-  Elf64_Addr st_value;                /* Value of the symbol */
-  Elf64_Xword st_size;                /* Associated symbol size */
+  unsigned char        st_info;      /* Type and binding attributes */ 8b
+  unsigned char        st_other;     /* No defined meaning, 0 */ 8b
+  Elf64_Half st_shndx;               /* Associated section index */ u16
+  Elf64_Addr st_value;               /* Value of the symbol */
+  Elf64_Xword st_size;               /* Associated symbol size */
 } Elf64_Sym;
 ```
 
@@ -341,3 +341,36 @@ typedef __s64        Elf64_Sxword;
 
     // - The symbol is a stabs symbol in an a.out object file. In this case, the next values printed are the stabs other field, the stabs desc field, and the stab type. Stabs symbols are used to hold debugging information. 
     // ? The symbol type is unknown, or object file format specific. 
+
+
+
+    A
+        symbol_table->st_shndx == SHN_ABS
+
+    B
+
+    C
+        symbol_table->st_shndx == SHN_COMMON
+    
+    D
+
+    G
+
+    I
+
+    N
+
+    P
+
+    R
+
+    S
+
+    T
+
+    U
+        symbol_table->st_shndx == SHN_UNDEF
+
+    V
+
+    W

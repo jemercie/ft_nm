@@ -27,6 +27,13 @@ typedef struct  s_symbol{
     
 }               t_symbol;
 
+typedef struct  s_option{
+    bool    debug_symbols;
+    bool    extern_only;
+    bool    undefined_only;
+    bool    reverse_sort;
+    bool    no_sort;
+}               t_option;
 
 bool open_and_map_file(char *filename, t_file *file);
                     // open_and_map_file.c

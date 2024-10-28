@@ -14,7 +14,7 @@ ls ressources/ > $filename
 while read -r line; do
 
 	nm ressources/$line > test_result_nm.txt
-	./ft_nm ressources/$line > test_result_ft_nm.txt
+	../ft_nm ressources/$line > test_result_ft_nm.txt
 
 	if ! diff -I 'round-trip*' test_result_nm.txt test_result_ft_nm.txt 
 	then
