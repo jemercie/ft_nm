@@ -22,9 +22,6 @@ static int strcmp_no_case(char *s1, char *s2);
 static char resolve_symbol_type(Elf64_Sym   *symbol_table, Elf64_Shdr *section_hdr){
     char c = 'K';
 
-    if (ELF64_ST_BIND(symbol_table->st_info) == STB_GNU_UNIQUE)
-        return'u';
-
     if (ELF64_ST_TYPE(symbol_table->st_info) == STT_GNU_IFUNC)
             return'i';
 
@@ -32,6 +29,20 @@ static char resolve_symbol_type(Elf64_Sym   *symbol_table, Elf64_Shdr *section_h
         if (ELF64_ST_TYPE(symbol_table->st_info) == STT_OBJECT)
             return symbol_table->st_shndx == SHN_UNDEF ? 'v' : 'V';
         return symbol_table->st_shndx == SHN_UNDEF ? 'w' : 'W';
+    }
+    else if (((section_hdr && section_hdr->sh_type == SHT_PROGBITS)&& section_hdr->sh_flags == (SHF_ALLOC | SHF_EXECINSTR))){
+        return 'T';
+    }
+    else if (symbol_table->st_shndx == SHN_UNDEF){
+        return 'U';
+    }
+    else if ((section_hdr && section_hdr->sh_type == SHT_PROGBITS && section_hdr->sh_flags == (SHF_ALLOC) )|| (( section_hdr && section_hdr->sh_flags & SHF_STRINGS) > 0 || (section_hdr && section_hdr->sh_type == SHT_REL) || (section_hdr && section_hdr->sh_type == SHT_RELA) || (section_hdr && section_hdr->sh_type == SHT_NOTE)))
+    {
+        return 'R';
+    }
+    else if (ELF64_ST_TYPE(symbol_table->st_info) == STT_OBJECT || ELF64_ST_TYPE(symbol_table->st_info) == STT_NOTYPE || ((section_hdr && (section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE) && (section_hdr->sh_type == SHT_INIT_ARRAY || section_hdr->sh_type == SHT_FINI_ARRAY || section_hdr->sh_type == SHT_DYNAMIC || section_hdr->sh_flags == SHT_SHLIB))) || section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE | SHF_TLS)))
+    {
+        return section_hdr->sh_type == SHT_NOBITS ? 'B' : 'D';
     }
     else if (symbol_table->st_shndx == SHN_ABS){
         return'A';
@@ -41,21 +52,11 @@ static char resolve_symbol_type(Elf64_Sym   *symbol_table, Elf64_Shdr *section_h
         return'C';
     }
 
-    else if (symbol_table->st_shndx == SHN_UNDEF){
-        return 'U';
-    }
+    else if (ELF64_ST_BIND(symbol_table->st_info) == STB_GNU_UNIQUE)
+        return'u';
 
-    else if (ELF64_ST_TYPE(symbol_table->st_info) == STT_FUNC || ((section_hdr && section_hdr->sh_type == SHT_PROGBITS)&& section_hdr->sh_flags == (SHF_ALLOC | SHF_EXECINSTR))){
-        return 'T';
-    }
-    else if ((section_hdr->sh_type == SHT_PROGBITS && section_hdr->sh_flags == (SHF_ALLOC) )|| ((section_hdr->sh_flags & SHF_STRINGS) > 0 || section_hdr->sh_type == SHT_REL || section_hdr->sh_type == SHT_RELA || (section_hdr && section_hdr->sh_type == SHT_NOTE)))
-    {
-        return 'R';
-    }
-    else if (ELF64_ST_TYPE(symbol_table->st_info) == STT_OBJECT || ELF64_ST_TYPE(symbol_table->st_info) == STT_NOTYPE || ((section_hdr && (section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE) && (section_hdr->sh_type == SHT_INIT_ARRAY || section_hdr->sh_type == SHT_FINI_ARRAY || section_hdr->sh_type == SHT_DYNAMIC || section_hdr->sh_flags == SHT_SHLIB))) || section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE | SHF_TLS)))
-    {
-        return section_hdr->sh_type == SHT_NOBITS ? 'B' : 'D';
-    }
+
+
     else if ( c == 'K')
         return '?';
 
@@ -91,18 +92,21 @@ bool find_and_print_symbol_table_x64(t_file *file){
             new = new_symbol_lst_node(strtab+symbol_table[j].st_name, j, symbol, symbol_table[j].st_value); // tester si sh_shndx est pas plus grand 
             lst_add_node_sorted(&lst, new);
             printf("%c ", symbol);
-            uint32_t add =  section_hdr[symbol_table[j].st_shndx].sh_flags;
-            printf("add : %d\n", add);
-            add = section_hdr[symbol_table[j].st_shndx].sh_type << 16;
-            printf("add : %d\n", add);
-            printf("%d, %d %lu\n", add, symbol_table[j].st_info, section_hdr[symbol_table[j].st_shndx].sh_type + section_hdr[symbol_table[j].st_shndx].sh_flags);
-            // Elf64_Shdr *section_strtab = &section_hdr[elf_header->e_shstrndx];
-            // char *section_strtab_data = (char *)(file->file + section_strtab->sh_offset);
-            // if (symbol_table[j].st_shndx <= elf_header->e_shnum)
-                // printf("%c   section header name: %s, symbol table name:%s\n", symbol, (char*)section_strtab_data + section_hdr[symbol_table[j].st_shndx].sh_name, strtab+symbol_table[j].st_name);
-
+            if (symbol_table[j].st_shndx <= elf_header->e_shstrndx){
+                Elf64_Shdr *section_strtab = &section_hdr[elf_header->e_shstrndx];
+                char *section_strtab_data = (char *)(file->file + section_strtab->sh_offset);
+                printf("section header name: %s, symbol table name:%s\n", (char*)section_strtab_data + section_hdr[symbol_table[j].st_shndx].sh_name, strtab+symbol_table[j].st_name);
+                printf("section header name: %s, symbol table name: %s\n", (char *)(section_strtab_data + section_hdr[symbol_table[j].st_shndx].sh_name), strtab + symbol_table[j].st_name);
+            }
         }
     }
+    // t_symbol *print = lst;
+    // for (;print; print= print->next){
+            // if (print->symbol == 'U' || print->symbol == 'w')
+                // printf("                 %c %s\n", print->symbol, print->name);
+            // else
+                // printf("%016lx %c %s\n", print->adress, print->symbol, print->name);
+    // }
     return TRUE;
 }
 

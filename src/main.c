@@ -22,8 +22,8 @@ static bool interpret_elf_header(t_file *file);
 int main(int argc, char **argv){
     t_file file;
 
-    if !(parse_options(argv))
-        return END;
+    // if !(parse_options(argv))
+    //     return END;
 
     for (int i = 1; i < argc; i++){
         if (argv[i] && open_and_map_file(argv[i], &file)){

@@ -346,31 +346,48 @@ typedef __s64        Elf64_Sxword;
 
     A
         symbol_table->st_shndx == SHN_ABS
+    a 2
 
-    B
+    B 170
+    b 433
 
     C
         symbol_table->st_shndx == SHN_COMMON
     
-    D
+    D 192
+    d 309
 
     G
 
-    I
+    I 0
+    i 24
 
     N
 
     P
 
-    R
+    R 72
+    r 350
 
     S
 
-    T
+    T 2612
+    t 1694
 
-    U
+    U 1713
+    u
         symbol_table->st_shndx == SHN_UNDEF
 
-    V
+    V 250
+    v
 
-    W
+    W 465
+    w 38
+
+    t
+    u
+    b
+    d
+    w
+    v
+    
