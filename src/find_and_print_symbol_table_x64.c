@@ -89,21 +89,21 @@ bool find_and_print_symbol_table_x64(t_file *file){
                 symbol += 32;
             new = new_symbol_lst_node(strtab+symbol_table[j].st_name, j, symbol, symbol_table[j].st_value); // tester si sh_shndx est pas plus grand 
             lst_add_node_sorted(&lst, new);
-            printf("%c ", symbol);
-            if (symbol_table[j].st_shndx <= elf_header->e_shstrndx){
-                Elf64_Shdr *section_strtab = &section_hdr[elf_header->e_shstrndx];
-                char *section_strtab_data = (char *)(file->file + section_strtab->sh_offset);
-                printf("section header name: %s, symbol table name:%s\n", (char*)section_strtab_data + section_hdr[symbol_table[j].st_shndx].sh_name, strtab+symbol_table[j].st_name);
-                printf("section header name: %s, symbol table name: %s\n", (char *)(section_strtab_data + section_hdr[symbol_table[j].st_shndx].sh_name), strtab + symbol_table[j].st_name);
-            }
+            // printf("%c ", symbol);
+            // if (symbol_table[j].st_shndx <= elf_header->e_shstrndx){
+                // Elf64_Shdr *section_strtab = &section_hdr[elf_header->e_shstrndx];
+                // char *section_strtab_data = (char *)(file->file + section_strtab->sh_offset);
+                // printf("section header name: %s, symbol table name:%s\n", (char*)section_strtab_data + section_hdr[symbol_table[j].st_shndx].sh_name, strtab+symbol_table[j].st_name);
+                // printf("section header name: %s, symbol table name: %s\n", (char *)(section_strtab_data + section_hdr[symbol_table[j].st_shndx].sh_name), strtab + symbol_table[j].st_name);
+            // }
         }
     }
     // t_symbol *print = lst;
     // for (;print; print= print->next){
-            // if (print->symbol == 'U' || print->symbol == 'w')
-                // printf("                 %c %s\n", print->symbol, print->name);
-            // else
-                // printf("%016lx %c %s\n", print->adress, print->symbol, print->name);
+    //         if (print->symbol == 'U' || print->symbol == 'w')
+    //             printf("                 %c %s\n", print->symbol, print->name);
+    //         else
+    //             printf("%016lx %c %s\n", print->adress, print->symbol, print->name);
     // }
     return TRUE;
 }

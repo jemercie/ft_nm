@@ -17,47 +17,44 @@
 */
 
 
-static bool interpret_elf_header(t_file *file);
+static void open_and_map_file_and_interpret_elf_header(char *filename, t_file *file);
+
 
 int main(int argc, char **argv){
+
     t_file file;
     t_options options;
 
-    // if (parse_options(& options, argv) == NO_ARGS){
-        // open_and_map_file_and_interpret_elf_header("a.out", &file)
-        // return END;
-    // }
+    if (parse_options(&options, argv) == NO_FILE_ARG){
+        open_and_map_file_and_interpret_elf_header("a.out", &file);
+        return END;
+    }
 
     for (int i = 1; i < argc; i++){
-            open_and_map_file_and_interpret_elf_header(argv[i], &file);
+        open_and_map_file_and_interpret_elf_header(argv[i], &file);
     }
     return END;
 }
 
 static void open_and_map_file_and_interpret_elf_header(char *filename, t_file *file){
 
-    if (!filename|| !open_and_map_file(filename, file))
+    if (!filename || !open_and_map_file(filename, file))
         return ;
-    interpret_elf_header(&file);
-    munmap(file->file, file->infos.st_size);
-
-    return ;
-}
-
-static bool interpret_elf_header(t_file *file){
-
-    short arch = file->file[EI_CLASS];
     
+    short arch = file->file[EI_CLASS];
+
     switch (arch){
         case ELFCLASSNONE:
-            return FALSE;
+            // err nm: Makefile: file format not recognized
+            return ;
         case ELFCLASS32:
             find_and_print_symbol_table_x32(file);
-            return TRUE;
+            return;
         case ELFCLASS64:
             find_and_print_symbol_table_x64(file);
-            return TRUE;
+            return;
     }
-    return TRUE;
-}
 
+    munmap(file->file, file->infos.st_size);
+    return ;
+}
