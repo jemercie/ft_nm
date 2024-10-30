@@ -2,6 +2,7 @@
 # define INCLUDE_H
 
 # include "macros.h"
+# include "errors.h"
 # include "print_macros.h"
 
 #include <elf.h>         // Elf64_Ehdr, Elf32_Ehdr, EI_CLASS,
@@ -27,13 +28,13 @@ typedef struct  s_symbol{
     
 }               t_symbol;
 
-typedef struct  s_option{
+typedef struct  s_options{
     bool    debug_symbols;
     bool    extern_only;
     bool    undefined_only;
     bool    reverse_sort;
     bool    no_sort;
-}               t_option;
+}               t_options;
 
 bool open_and_map_file(char *filename, t_file *file);
                     // open_and_map_file.c
