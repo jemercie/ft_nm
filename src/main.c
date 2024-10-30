@@ -17,7 +17,7 @@
 */
 
 
-static void open_and_map_file_and_interpret_elf_header(char *filename, t_file *file);
+static void open_and_map_file_and_interpret_elf_header(char *filename, t_file *file, t_options *options);
 
 
 int main(int argc, char **argv){
@@ -26,17 +26,17 @@ int main(int argc, char **argv){
     t_options options;
 
     if (parse_options(&options, argv) == NO_FILE_ARG){
-        open_and_map_file_and_interpret_elf_header("a.out", &file);
+        open_and_map_file_and_interpret_elf_header("a.out", &file, &options);
         return END;
     }
 
     for (int i = 1; i < argc; i++){
-        open_and_map_file_and_interpret_elf_header(argv[i], &file);
+        open_and_map_file_and_interpret_elf_header(argv[i], &file, &options);
     }
     return END;
 }
 
-static void open_and_map_file_and_interpret_elf_header(char *filename, t_file *file){
+static void open_and_map_file_and_interpret_elf_header(char *filename, t_file *file, t_options *options){
 
     if (!filename || !open_and_map_file(filename, file))
         return ;
@@ -48,10 +48,10 @@ static void open_and_map_file_and_interpret_elf_header(char *filename, t_file *f
             // err nm: Makefile: file format not recognized
             return ;
         case ELFCLASS32:
-            find_and_print_symbol_table_x32(file);
+            find_and_print_symbol_table_x32(file, options);
             return;
         case ELFCLASS64:
-            find_and_print_symbol_table_x64(file);
+            find_and_print_symbol_table_x64(file, options);
             return;
     }
 

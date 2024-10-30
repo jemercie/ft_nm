@@ -43,9 +43,9 @@ bool    open_and_map_file(char *filename, t_file *file);
                     // open_and_map_file.c
 int     parse_options(t_options *options, char **argv);
                     // regex_parse_options.c
-bool    find_and_print_symbol_table_x64(t_file *file);
+bool    find_and_print_symbol_table_x64(t_file *file, t_options *options);
                     // find_and_print_symbol_table_x64
-bool    find_and_print_symbol_table_x32(t_file *file);
+bool    find_and_print_symbol_table_x32(t_file *file, t_options *options);
                     // find_and_print_symbol_table_x32
 
 #endif

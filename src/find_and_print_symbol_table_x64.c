@@ -1,10 +1,13 @@
 #include "nm.h"
 #include <elf.h>
 
-static int get_symtab_index(Elf64_Ehdr *elf_header, Elf64_Shdr *section_hdr_table);
+static int      get_symtab_index(Elf64_Ehdr *elf_header, Elf64_Shdr *section_hdr_table);
 static void     lst_add_node_sorted(t_symbol **lst, t_symbol *new);
+static void     lst_add_node(t_symbol **lst, t_symbol *new);
 static t_symbol *new_symbol_lst_node(char *name, int index, char symbol, uint64_t adress);
-static int strcmp_no_case(char *s1, char *s2);
+static int      strcmp_no_case(char *s1, char *s2);
+static void     lst_add_node(t_symbol **lst, t_symbol *new);
+static void lst_add_node(t_symbol **lst, t_symbol *new);
 
 #include <stdlib.h>
 #include <string.h>
@@ -62,7 +65,7 @@ static char resolve_symbol_type(Elf64_Sym   *symbol_table, Elf64_Shdr *section_h
 }
 
 
-bool find_and_print_symbol_table_x64(t_file *file){
+bool find_and_print_symbol_table_x64(t_file *file, t_options *options){
 
     Elf64_Ehdr  *elf_header      = (Elf64_Ehdr *)file->file;
     Elf64_Shdr  *section_hdr     = (Elf64_Shdr *)&file->file[elf_header->e_shoff];
@@ -87,8 +90,8 @@ bool find_and_print_symbol_table_x64(t_file *file){
             char symbol = resolve_symbol_type(&symbol_table[j], symbol_table[j].st_shndx <= elf_header->e_shnum ? &section_hdr[symbol_table[j].st_shndx] : NULL);
             if (ELF64_ST_BIND(symbol_table[j].st_info) == STB_LOCAL && symbol != UNDEFINED_SYMBOL)
                 symbol += 32;
-            new = new_symbol_lst_node(strtab+symbol_table[j].st_name, j, symbol, symbol_table[j].st_value); // tester si sh_shndx est pas plus grand 
-            lst_add_node_sorted(&lst, new);
+            new = new_symbol_lst_node(strtab+symbol_table[j].st_name, j, symbol, symbol_table[j].st_value); // tester si sh_shndx est pas plus grand
+            options->no_sort ? lst_add_node(&lst, new) : lst_add_node_sorted(&lst, new);
             // printf("%c ", symbol);
             // if (symbol_table[j].st_shndx <= elf_header->e_shstrndx){
                 // Elf64_Shdr *section_strtab = &section_hdr[elf_header->e_shstrndx];
@@ -98,13 +101,14 @@ bool find_and_print_symbol_table_x64(t_file *file){
             // }
         }
     }
-    // t_symbol *print = lst;
-    // for (;print; print= print->next){
-    //         if (print->symbol == 'U' || print->symbol == 'w')
-    //             printf("                 %c %s\n", print->symbol, print->name);
-    //         else
-    //             printf("%016lx %c %s\n", print->adress, print->symbol, print->name);
-    // }
+    // print or reverse print if reverse sort
+    t_symbol *print = lst;
+    for (;print; print= print->next){
+            if (print->symbol == 'U' || print->symbol == 'w')
+                printf("                 %c %s\n", print->symbol, print->name);
+            else
+                printf("%016lx %c %s\n", print->adress, print->symbol, print->name);
+    }
     return TRUE;
 }
 
@@ -133,6 +137,25 @@ static int get_symtab_index(Elf64_Ehdr *elf_header, Elf64_Shdr *section_hdr_tabl
         }
     }
     return -1;
+}
+
+static void lst_add_node(t_symbol **lst, t_symbol *new) {
+    if (!new || !new->name) return;
+
+    if (!*lst) {
+        *lst = new;
+        new->next = NULL;
+        return;
+    }
+
+    t_symbol *tmp = *lst;
+
+    while (tmp->next) {
+        tmp = tmp->next;
+    }
+
+    new->next = tmp->next;
+    tmp->next = new;
 }
 
 static void lst_add_node_sorted(t_symbol **lst, t_symbol *new) {

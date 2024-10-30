@@ -5,6 +5,7 @@ static int get_symtab_index(Elf32_Ehdr *elf_header, Elf32_Shdr *section_hdr_tabl
 static void     lst_add_node_sorted(t_symbol **lst, t_symbol *new);
 static t_symbol *new_symbol_lst_node(char *name, int index, char symbol, uint64_t adress);
 static int strcmp_no_case(char *s1, char *s2);
+static void lst_add_node(t_symbol **lst, t_symbol *new);
 
 #include <stdlib.h>
 #include <string.h>
@@ -51,7 +52,7 @@ static char resolve_symbol_type(Elf32_Sym   *symbol_table, Elf32_Shdr *section_h
 
 
 
-bool find_and_print_symbol_table_x32(t_file *file){
+bool find_and_print_symbol_table_x32(t_file *file, t_options *options){
 
     Elf32_Ehdr  *elf_header      = (Elf32_Ehdr *)file->file;
     Elf32_Shdr  *section_hdr     = (Elf32_Shdr *)&file->file[elf_header->e_shoff];
@@ -78,7 +79,7 @@ bool find_and_print_symbol_table_x32(t_file *file){
             if (ELF32_ST_BIND(symbol_table[j].st_info) == STB_LOCAL && symbol != UNDEFINED_SYMBOL)
                 symbol += 32;
             new = new_symbol_lst_node(strtab+symbol_table[j].st_name, j, symbol, symbol_table[j].st_value); // tester si sh_shndx est pas plus grand 
-            lst_add_node_sorted(&lst, new);
+            options->no_sort ? lst_add_node(&lst, new) : lst_add_node_sorted(&lst, new);
             // printf("%c ", symbol);
             // if (symbol_table[j].st_shndx <= elf_header->e_shstrndx){
                 // Elf32_Shdr *section_strtab = &section_hdr[elf_header->e_shstrndx];
@@ -123,6 +124,27 @@ static int get_symtab_index(Elf32_Ehdr *elf_header, Elf32_Shdr *section_hdr_tabl
     }
     return -1;
 }
+
+
+static void lst_add_node(t_symbol **lst, t_symbol *new) {
+    if (!new || !new->name) return;
+
+    if (!*lst) {
+        *lst = new;
+        new->next = NULL;
+        return;
+    }
+
+    t_symbol *tmp = *lst;
+
+    while (tmp->next) {
+        tmp = tmp->next;
+    }
+
+    new->next = tmp->next;
+    tmp->next = new;
+}
+
 
 static void lst_add_node_sorted(t_symbol **lst, t_symbol *new) {
     if (!new || !new->name) return;

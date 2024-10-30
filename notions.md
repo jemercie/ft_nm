@@ -343,7 +343,8 @@ typedef __s64        Elf64_Sxword;
     // ? The symbol type is unknown, or object file format specific. 
 
 
-
+        idk how to optimize flags(etc) checking, so putting them in decressant occurence order
+    
     A
         symbol_table->st_shndx == SHN_ABS
     a 2
@@ -391,3 +392,14 @@ typedef __s64        Elf64_Sxword;
     w
     v
     
+        // parsing tests
+
+    ./ft_nm --debug-syms --extern-only --undefined-only --no-sort --reverse-sort ft_nm
+
+    ./ft_nm --debug-syms --extern_only --undefined-only --no-sort --reverse-sort ft_nm 
+
+    ./ft_nm -a -g -u -r -p ft_nm
+
+    ./ft_nm -agurp ft_nm
+    
+    ./ft_nm -aguhrp ft_nm
