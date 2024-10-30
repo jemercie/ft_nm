@@ -1,5 +1,10 @@
 
 
+bool parse_options(t_options *options, char **argv){
+
+
+}
+
 static bool regex_get_and_set_boolean_value(bool *opt, char *option){
 
     const char *regex_tab_bool_option[] = REGEX_LIST_BOOL_OPTION;
@@ -24,4 +29,9 @@ static bool regex_check_format(const char *testedStr, const char *regex){
     if (res == 0)
         return TRUE;
     return FALSE;
+}
+
+static void init_options_struct(t_options *options){
+
+    memset(options, 0, sizeof(t_options));
 }

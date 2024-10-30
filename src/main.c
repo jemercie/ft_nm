@@ -24,7 +24,7 @@ int main(int argc, char **argv){
 
     // if !(parse_options(argv))
     //     return END;
-
+    printf("argc: %d\n", argc);
     for (int i = 1; i < argc; i++){
         if (argv[i] && open_and_map_file(argv[i], &file)){
             interpret_elf_header(&file);

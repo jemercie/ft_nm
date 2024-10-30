@@ -55,8 +55,6 @@ static char resolve_symbol_type(Elf64_Sym   *symbol_table, Elf64_Shdr *section_h
     else if (ELF64_ST_BIND(symbol_table->st_info) == STB_GNU_UNIQUE)
         return'u';
 
-
-
     else if ( c == 'K')
         return '?';
 
