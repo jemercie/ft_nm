@@ -16,7 +16,6 @@ int parse_options(t_options *options, char **argv){
 
     for (int i = 1; argv[i]; i++){
         int ret = regex_check_arg_type(argv[i]);
-        printf("return of check arg type is %d\n", ret);
         switch (ret)
         {
         case FULL_NAME_OPTION:
@@ -46,64 +45,56 @@ static int regex_check_arg_type(char *arg){
     return FILENAME;
 }
 
-static void set_letter_options(t_options *options, char *arg){
+static void set_letter_options(t_options *options, char *option_arg){
 
-    for(int i = 1; arg[i]; i++){
-        switch (arg[i])
+    for(int i = 1; option_arg[i]; i++){
+        switch (option_arg[i])
         {
         case 'a':
-            printf("a = true\n");
             options->debug_symbols = true;
             break;
         case 'g':
-            printf("g = true\n");
             options->extern_only = true;
             break;
         case 'u':
-            printf("u = true\n");
             options->undefined_only = true;
             break;
         case 'r':
-            printf("r = true\n");
             options->reverse_sort = true;
             break;
         case 'p':
-            printf("p = true\n");
             options->no_sort = true;
             break;
         default :
-            fprintf(stderr, "unknown option %c\n", arg[i]);
-            // exit(0);
-            break;
+            PRINT_ERROR_UNKNOWN_OPTION_AND_EXIT(&option_arg[i]);
         }
     }
-    arg = NULL;
+    option_arg = NULL;
 }
 
 static void regex_set_full_name_options(bool *options, char *option_arg){
 
     static const char *regex_full_name_options_tab[] = REGEX_FULL_NAME_OPTIONS_TAB;
+    short i = 0;
 
-    for(short i = 0; i < NB_OF_OPTIONS; i++){
+    for( ; i < NB_OF_OPTIONS; i++){
         if (regex_check_format(option_arg, regex_full_name_options_tab[i])){
             options[i] = true;
-            printf("%d = true\n", i);
             option_arg = NULL;
             return ;
         }
     }
-    fprintf(stderr, "unknown option %s\n", option_arg);
-    option_arg = NULL;
-    // exit(0);
+    PRINT_ERROR_UNKNOWN_OPTION_AND_EXIT(&option_arg[i]);
 }
 
 static bool regex_check_format(const char *tested_str, const char *regex){
 
     regex_t reg;
 
-    if (regcomp(&reg, regex, REG_EXTENDED | REG_NOSUB) != 0)
-        return FALSE;
-        // print(stderr, ERROR_COMPILING_REGEX, 1);
+    if (regcomp(&reg, regex, REG_EXTENDED | REG_NOSUB) != 0){
+        PRINT_ERROR_COMPILING_REGEX_AND_EXIT;
+        exit(0);
+    }
     int res = regexec(&reg, tested_str, (size_t) 0, NULL, 0);
     regfree(&reg);
     if (res == 0)

@@ -25,6 +25,7 @@ bool open_and_map_file(char *filename, t_file *file){
         return FALSE;
     if (!map_file(file))
         return FALSE;
+    file->filename = filename;
     return TRUE;
 }
 

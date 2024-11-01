@@ -1,117 +1,92 @@
 #include "nm.h"
 #include <elf.h>
 
-static int get_symtab_index(Elf32_Ehdr *elf_header, Elf32_Shdr *section_hdr_table);
-static void     lst_add_node_sorted(t_symbol **lst, t_symbol *new);
-static t_symbol *new_symbol_lst_node(char *name, int index, char symbol, uint64_t adress);
-static int strcmp_no_case(char *s1, char *s2);
-static void lst_add_node(t_symbol **lst, t_symbol *new);
-
-#include <stdlib.h>
-#include <string.h>
-
+static int  get_symtab_index(Elf32_Ehdr *elf_header, Elf32_Shdr *section_hdr_table);
+static void init_elf_struct(t_file *file, t_elf32 *elf);
 
 
 static char resolve_symbol_type(Elf32_Sym   *symbol_table, Elf32_Shdr *section_hdr){
+
     char c = 'K';
 
     if (ELF32_ST_TYPE(symbol_table->st_info) == STT_GNU_IFUNC)
         return 'i';
-
+    else if ((ELF32_ST_TYPE(symbol_table->st_info) == STT_FILE))
+        return 'a';
     else if (ELF32_ST_BIND(symbol_table->st_info) == STB_WEAK){
-
         if (ELF32_ST_TYPE(symbol_table->st_info) == STT_OBJECT)
             return symbol_table->st_shndx == SHN_UNDEF ? 'v' : 'V';
-
         return symbol_table->st_shndx == SHN_UNDEF ? 'w' : 'W';
     }
     else if ((section_hdr && (section_hdr->sh_type == SHT_PROGBITS)&& section_hdr->sh_flags == (SHF_ALLOC | SHF_EXECINSTR)))
         return 'T';
     else if (symbol_table->st_shndx == SHN_UNDEF)
         return 'U';
-
     else if ((section_hdr && section_hdr->sh_type == SHT_PROGBITS && section_hdr->sh_flags == (SHF_ALLOC) )|| (section_hdr && ( (section_hdr->sh_flags & SHF_STRINGS) > 0 || section_hdr->sh_type == SHT_REL || section_hdr->sh_type == SHT_RELA || (section_hdr && section_hdr->sh_type == SHT_NOTE))))
         return 'R';
     else if (section_hdr && (ELF32_ST_TYPE(symbol_table->st_info) == STT_OBJECT || ELF32_ST_TYPE(symbol_table->st_info) == STT_NOTYPE || ((section_hdr && (section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE) && (section_hdr->sh_type == SHT_INIT_ARRAY || section_hdr->sh_type == SHT_FINI_ARRAY || section_hdr->sh_type == SHT_DYNAMIC || section_hdr->sh_flags == SHT_SHLIB))) || section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE | SHF_TLS))))
         return section_hdr->sh_type == SHT_NOBITS ? 'B' : 'D';
-
     else if (ELF32_ST_BIND(symbol_table->st_info) == STB_GNU_UNIQUE)
         return'u';
-
     else if (symbol_table->st_shndx == SHN_ABS)
        return 'A';
-
     else if (symbol_table->st_shndx == SHN_COMMON)
         return 'C';
-
     else if ( c == 'K')
         return '?';
 
     return c;
 }
 
+static char resolve_undefined_symbol_type_only(Elf32_Sym   *symbol_table){
 
+    if (ELF64_ST_BIND(symbol_table->st_info) == STB_WEAK){
+        if (ELF64_ST_TYPE(symbol_table->st_info) == STT_OBJECT)
+            return symbol_table->st_shndx == SHN_UNDEF ? 'v' : '?';
+        return symbol_table->st_shndx == SHN_UNDEF ? 'w' : '?';
+    }
+    else if (symbol_table->st_shndx == SHN_UNDEF)
+        return 'U';
+    
+    return '?';
+}
 
 bool find_and_print_symbol_table_x32(t_file *file, t_options *options){
 
-    Elf32_Ehdr  *elf_header      = (Elf32_Ehdr *)file->file;
-    Elf32_Shdr  *section_hdr     = (Elf32_Shdr *)&file->file[elf_header->e_shoff];
-    int         symtab_index     = get_symtab_index(elf_header, section_hdr);
-    if (symtab_index == -1){
-        printf("ft_nm: filename: no symbols\n");
-        return 0;
-    }
-    Elf32_Sym   *symbol_table    = (Elf32_Sym *)(file->file + section_hdr[symtab_index].sh_offset);
+    static t_elf32  elf;
+    t_symbol        *lst = NULL;
+    char            symbol;
 
-    Elf32_Shdr *strtab_section = &section_hdr[section_hdr[symtab_index].sh_link];
-    char *strtab = (char *)(file->file + strtab_section->sh_offset);
-
-    size_t symbols_nb = section_hdr[symtab_index].sh_size / sizeof(Elf32_Sym);
-
-    t_symbol *lst = NULL;
-    t_symbol *new;
-    for (size_t j = 1; j < symbols_nb; j++) {
-        if (ELF32_ST_TYPE(symbol_table[j].st_info) == STT_FILE || strlen(strtab+symbol_table[j].st_name) == 0)
-            continue;
+    init_elf_struct(file, &elf);
+    for (size_t j = 1; j < elf.symbols_nb; j++) {
+        if (options->undefined_only){
+            symbol = resolve_undefined_symbol_type_only(&elf.symbol_table[j]);
+            if (symbol != '?')
+                lst = add_symbol_to_lst(lst, elf.strtab+elf.symbol_table[j].st_name, symbol, elf.symbol_table[j].st_value, options);
+        }
+        else if ((ELF32_ST_TYPE(elf.symbol_table[j].st_info) == STT_FILE || \
+            ft_strlen(elf.strtab+elf.symbol_table[j].st_name) == 0))
+            if (options->debug_symbols){
+                symbol = 'a';
+                lst = add_symbol_to_lst(lst, elf.strtab+elf.symbol_table[j].st_name, symbol, elf.symbol_table[j].st_value, options);
+            }
+            else
+                continue;
         else{
-            char symbol = resolve_symbol_type(&symbol_table[j], symbol_table[j].st_shndx <= elf_header->e_shnum ? &section_hdr[symbol_table[j].st_shndx] : NULL);
+            symbol = resolve_symbol_type(&elf.symbol_table[j], elf.symbol_table[j].st_shndx \
+                        <= elf.header->e_shnum ? &elf.section_hdr[elf.symbol_table[j].st_shndx] : NULL);
 
-            if (ELF32_ST_BIND(symbol_table[j].st_info) == STB_LOCAL && symbol != UNDEFINED_SYMBOL)
+            if (ELF32_ST_BIND(elf.symbol_table[j].st_info) == STB_LOCAL && symbol != UNDEFINED_SYMBOL)
                 symbol += 32;
-            new = new_symbol_lst_node(strtab+symbol_table[j].st_name, j, symbol, symbol_table[j].st_value); // tester si sh_shndx est pas plus grand 
-            options->no_sort ? lst_add_node(&lst, new) : lst_add_node_sorted(&lst, new);
-            // printf("%c ", symbol);
-            // if (symbol_table[j].st_shndx <= elf_header->e_shstrndx){
-                // Elf32_Shdr *section_strtab = &section_hdr[elf_header->e_shstrndx];
-                // char *section_strtab_data = (char *)(file->file + section_strtab->sh_offset);
-                // printf("section header name: %s, symbol table name:%s\n", (char*)section_strtab_data + section_hdr[symbol_table[j].st_shndx].sh_name, strtab+symbol_table[j].st_name);
-                // printf("section header name: %s, symbol table name: %s\n", (char *)(section_strtab_data + section_hdr[symbol_table[j].st_shndx].sh_name), strtab + symbol_table[j].st_name);
-            // }
+            lst = add_symbol_to_lst(lst, elf.strtab+elf.symbol_table[j].st_name, symbol, elf.symbol_table[j].st_value, options);
         }
     }
-    // t_symbol *print = lst;
-    // for (;print; print= print->next){
-    //         if (print->symbol == 'U' || print->symbol == 'w')
-    //             printf("         %c %s\n", print->symbol, print->name);
-    //         else
-    //             printf("%08lx %c %s\n", print->adress, print->symbol, print->name);
-    // }
+
+    if (options->reverse_sort & !options->no_sort)
+        recursive_print_lst(lst, PADDING_LEN_32);
+    else
+        print_lst(lst, PADDING_LEN_32);
     return TRUE;
-}
-
-static t_symbol *new_symbol_lst_node(char *name, int index, char symbol, uint64_t adress){
-
-	t_symbol	*list;
-
-	list = malloc(sizeof(t_symbol));
-	if (!list)
-		return (NULL);
-    list->symbol = symbol;
-	list->index = index;
-    list->name = name;
-    list->adress = adress;
-	list->next = NULL;
-	return (list);
 }
 
 
@@ -124,124 +99,22 @@ static int get_symtab_index(Elf32_Ehdr *elf_header, Elf32_Shdr *section_hdr_tabl
     }
     return -1;
 }
+#include <stdio.h>
+static void init_elf_struct(t_file *file, t_elf32 *elf){
 
+    ft_memset(elf, 0, sizeof(t_elf64));
 
-static void lst_add_node(t_symbol **lst, t_symbol *new) {
-    if (!new || !new->name) return;
+    elf->header         = (Elf32_Ehdr *)file->file;
+    elf->section_hdr    = (Elf32_Shdr *)&file->file[elf->header->e_shoff];
+    elf->symtab_index   = get_symtab_index(elf->header, elf->section_hdr);
 
-    if (!*lst) {
-        *lst = new;
-        new->next = NULL;
-        return;
+    if (elf->symtab_index == -1){
+        PRINT_ERROR_NO_SYMBOL_AND_EXIT(file->filename);
     }
 
-    t_symbol *tmp = *lst;
+    elf->symbol_table   = (Elf32_Sym *)(file->file + elf->section_hdr[elf->symtab_index].sh_offset);
+    elf->strtab_section = &elf->section_hdr[elf->section_hdr[elf->symtab_index].sh_link];
+    elf->strtab         = (char *)(file->file + elf->strtab_section->sh_offset);
+    elf->symbols_nb     = elf->section_hdr[elf->symtab_index].sh_size / sizeof(Elf32_Sym);
 
-    while (tmp->next) {
-        tmp = tmp->next;
-    }
-
-    new->next = tmp->next;
-    tmp->next = new;
 }
-
-
-static void lst_add_node_sorted(t_symbol **lst, t_symbol *new) {
-    if (!new || !new->name) return;
-
-    if (!*lst) {
-        *lst = new;
-        new->next = NULL;
-        return;
-    }
-
-    t_symbol *tmp = *lst;
-
-    if (strcmp_no_case(tmp->name, new->name) > 0) {
-        new->next = tmp;
-        *lst = new;
-        return;
-    }
-
-    while (tmp->next && strcmp_no_case(tmp->next->name, new->name) <= 0) {
-        tmp = tmp->next;
-    }
-
-    new->next = tmp->next;
-    tmp->next = new;
-}
-
-#include <stddef.h> 
-
-#include <stddef.h> // pour size_t
-
-static int strcmp_no_case(char *s1, char *s2) {
-    size_t i = 0, j = 0;
-
-    while (s1[i] || s2[j]) {
-        // Ignorer les caractères non alphanumériques dans s1
-        while (s1[i] && !((s1[i] >= 'A' && s1[i] <= 'Z') || 
-                          (s1[i] >= 'a' && s1[i] <= 'z') || 
-                          (s1[i] >= '0' && s1[i] <= '9'))) {
-            i++;
-        }
-        // Ignorer les caractères non alphanumériques dans s2
-        while (s2[j] && !((s2[j] >= 'A' && s2[j] <= 'Z') || 
-                          (s2[j] >= 'a' && s2[j] <= 'z') || 
-                          (s2[j] >= '0' && s2[j] <= '9'))) {
-            j++;
-        }
-
-        // Si les deux chaînes sont épuisées
-        if (!s1[i] && !s2[j]) {
-            return 0;
-        }
-
-        // Si s1 est épuisé, mais pas s2
-        if (!s1[i]) {
-            return -1;
-        }
-        // Si s2 est épuisé, mais pas s1
-        if (!s2[j]) {
-            return 1;
-        }
-
-        char c1 = s1[i];
-        char c2 = s2[j];
-
-        // Gestion de la casse
-        if (c1 >= 'A' && c1 <= 'Z') c1 += 32;
-        if (c2 >= 'A' && c2 <= 'Z') c2 += 32;
-
-        // Comparaison des caractères
-        if (c1 != c2) {
-            return (unsigned char)c1 - (unsigned char)c2;
-        }
-
-        // Si les caractères sont identiques, on passe à la position suivante
-        i++;
-        j++;
-    }
-    j = 0;
-    i = 0;
-    // On va vérifier maintenant les caractères non alphanumériques au début des chaînes.
-    while (s1[i] && !((s1[i] >= 'A' && s1[i] <= 'Z') || 
-                      (s1[i] >= 'a' && s1[i] <= 'z') || 
-                      (s1[i] >= '0' && s1[i] <= '9'))) {
-        i++;
-    }
-    while (s2[j] && !((s2[j] >= 'A' && s2[j] <= 'Z') || 
-                      (s2[j] >= 'a' && s2[j] <= 'z') || 
-                      (s2[j] >= '0' && s2[j] <= '9'))) {
-        j++;
-    }
-    if (i < j)
-        return 1;
-    else if (s1[i] < s2[j])
-        return 1;
-    // Une fois que nous avons atteint les caractères non alphanumériques ou la fin, 
-    // nous avons déjà comparé les autres caractères.
-
-    return (unsigned char)s1[i] - (unsigned char)s2[j];
-}
-

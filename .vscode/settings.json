@@ -5,6 +5,15 @@
         "string.h": "c",
         "stdlib.h": "c",
         "random": "c",
-        "regex": "c"
+        "regex": "c",
+        "stddef.h": "c",
+        "nm.h": "c",
+        "typeinfo": "c",
+        "unistd.h": "c",
+        "compare": "c",
+        "cstdint": "c",
+        "macros.h": "c",
+        "stat.h": "c",
+        "stdio.h": "c"
     }
 }

@@ -3,16 +3,10 @@
 
 /*
         TODO
-    - compile libft properly
+    - compile libft properly or maybe rewrite just useful functions
     - replace every forbidden functions (printf etc)
     - make the resolve symbol type function less ugly
     - faire un truc pour les symboles de debug
-    - manage options: 
-            - a (dont skip stt_files f flag up)
-            - g extern only (uppercase)
-            - u (undefined only)
-            - r reverse sort
-            - p no sort
 
 */
 

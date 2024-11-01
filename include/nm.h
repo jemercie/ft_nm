@@ -16,6 +16,7 @@ typedef struct  s_file{
     int         fd;
     struct stat infos;
     char        *file;
+    char        *filename;
 }               t_file;
 
 
@@ -38,14 +39,55 @@ typedef struct  s_options{
     bool    no_sort;
 }               t_options;
 
+typedef struct  s_elf32{
 
-bool    open_and_map_file(char *filename, t_file *file);
+    Elf32_Ehdr  *header;
+    Elf32_Shdr  *section_hdr;
+    int         symtab_index ;
+    Elf32_Sym   *symbol_table;
+    Elf32_Shdr  *strtab_section;
+    char *strtab;
+    size_t symbols_nb;
+
+}               t_elf32;
+
+typedef struct  s_elf64{
+
+    Elf64_Ehdr  *header;
+    Elf64_Shdr  *section_hdr;
+    int         symtab_index ;
+    Elf64_Sym   *symbol_table;
+    Elf64_Shdr  *strtab_section;
+    char *strtab;
+    size_t symbols_nb;
+
+}               t_elf64;
+
+bool        open_and_map_file(char *filename, t_file *file);
                     // open_and_map_file.c
-int     parse_options(t_options *options, char **argv);
+
+int         parse_options(t_options *options, char **argv);
                     // regex_parse_options.c
-bool    find_and_print_symbol_table_x64(t_file *file, t_options *options);
+
+bool        find_and_print_symbol_table_x64(t_file *file, t_options *options);
                     // find_and_print_symbol_table_x64
-bool    find_and_print_symbol_table_x32(t_file *file, t_options *options);
+
+bool        find_and_print_symbol_table_x32(t_file *file, t_options *options);
                     // find_and_print_symbol_table_x32
+
+t_symbol    *add_symbol_to_lst(t_symbol *lst, char *name, char symbol, uint64_t adress, t_options *options);
+                    // add_symbol_to_lst.c
+
+void        print_lst(t_symbol *lst, short padding_len);
+void        recursive_print_lst(t_symbol *lst, short padding_len);
+                    // print_lst.c
+
+int         strcmp_no_case(char *s1, char *s2);
+void        ft_putstr_fd( int fd, char *str);
+void        *ft_memset(void *s, int c, size_t n);
+size_t      ft_strlen(const char *str);
+                    // utils.c
+
+
 
 #endif

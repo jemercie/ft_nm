@@ -17,5 +17,10 @@
 # define TEXT_CODE_SECTION_SYMBOL               'T'
 # define UNDEFINED_SYMBOL                       '?'
 
+# define PADDING_LEN_32                          11
+# define PADDING_LEN_64                          19
+# define SYMBOL_PADDING                          3
+
+# define HEX_DIGITS                              "0123456789abcdef"
 
 #endif
