@@ -1,42 +1,35 @@
 #!/bin/bash
 
-# Définition des couleurs
 green="\e[32m"
 red="\e[31m"
-yellow="\e[93m"
+pink="\e[38;2;255;182;193m"
+blue="\e[38;2;102;178;255m"
+purple="\e[38;2;150;150;255m"
 endcolor="\e[0m"
+
 filename=tests.txt
 filename_bonus=tests_bonus.txt
 
-# Liste les fichiers dans le répertoire ressources et les stocke dans tests.txt
 ls ressources/ > "$filename"
 
-echo "
-	TESTS BONUS:
-"
+echo -e "\n         $purple TESTS BONUS: $endcolor"
 
-# Redirige stderr vers stderr.txt
-exec 2>stderr.txt
 
-# Lecture des arguments de tests_bonus.txt
 while read -r line_args; do
-    # Lecture des fichiers dans tests.txt
+    echo -e "\n$pink test : $blue $line_args $endcolor"
     while read -r line; do
-        # Capturer la sortie de nm et ft_nm
-        nm ressources/"$line" "$line_args" > test_result_nm.txt
-        ../ft_nm ressources/"$line" "$line_args" > test_result_ft_nm.txt
+        nm ressources/"$line" $line_args > test_result_nm.txt
+        ../ft_nm ressources/"$line" $line_args > test_result_ft_nm.txt
 
-        # Comparaison des résultats
-        if ! diff -I 'round-trip*' test_result_nm.txt test_result_ft_nm.txt >trace; then
-            echo -e "test : $yellow $line_args $red [NOT PASSED] $yellow : $line $endcolor"
+        if ! diff test_result_nm.txt test_result_ft_nm.txt > out; then
+            echo -e " $red [NOT PASSED] $endcolor $line "
+            # echo -e "   diff:" ; cat out # uncomment line to print the diff result
         else
-            echo -e "test : $yellow $line_args $green [PASSED] $yellow : $line $endcolor"
+            echo -e "   $green [PASSED]  $endcolor $line "
         fi
-        
-        # Nettoyage des fichiers temporaires
         rm test_result_nm.txt test_result_ft_nm.txt
     done < "$filename"
 done < "$filename_bonus"
 
-# Nettoyage final
+rm out
 rm "$filename"

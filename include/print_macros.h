@@ -7,12 +7,14 @@
 #include <stdlib.h> // exit
 
 # define PRINT_ERROR_OPENING_FILE(filename) \
-ft_putstr_fd(2, "ft_nm: an error occured opening the file ");\
-ft_putstr_fd(2, filename);  write(1, "\n", 1)
+ft_putstr_fd(2, "ft_nm: '"); ft_putstr_fd(2, filename); \
+ft_putstr_fd(2, "': No such file\n");
 
 # define PRINT_SYMBOL_LINE(buffer, name)\
 ft_putstr_fd(1, buffer); ft_putstr_fd(1, name); write(1, "\n", 1)
 
+# define PRINT_ERROR_IS_A_DIRECTORY(filename) \
+ft_putstr_fd(2, "ft_nm: Warning: '"); ft_putstr_fd(2, filename); ft_putstr_fd(2, "' is a directory\n")
 
 # define PRINT_ERROR_GET_FILE_SIZE() \
 ft_putstr_fd(2, "ft_nm: fstat : an error occured getting the file size\n");

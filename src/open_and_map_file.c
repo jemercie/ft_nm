@@ -31,6 +31,10 @@ bool open_and_map_file(char *filename, t_file *file){
 
 static bool open_file(char *filename, int *fd){
 
+    if (open(filename, O_DIRECTORY) >= 0){
+        PRINT_ERROR_IS_A_DIRECTORY(filename);
+        return FALSE;
+    }
     *fd = open(filename, O_RDONLY);
     if (*fd < 0){
         PRINT_ERROR_OPENING_FILE(filename);

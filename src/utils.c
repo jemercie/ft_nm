@@ -30,7 +30,17 @@ int strcmp_no_case(char *s1, char *s2) {
         if (c1 != c2)
             return (unsigned char)c1 - (unsigned char)c2;
     }
-    return 1;
+    i = 0;
+    j = 0;
+    for (; (s1[i] && !ft_isalnum(s1[i])); i++);
+    for (; (s2[j] && !ft_isalnum(s2[j])); j++);
+
+    if (i < j)
+        return 1;
+    else if (s1[i] < s2[j])
+        return 1;
+
+    return 0;
 }
 
 static bool     ft_isalnum(int c){

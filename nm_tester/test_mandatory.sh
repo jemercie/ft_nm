@@ -5,24 +5,23 @@ green="\e[32m"
 red="\e[31m"
 yellow="\e[93m"
 endcolor="\e[0m"
+purple="\e[38;2;150;150;255m"
 filename=tests.txt
 
 ls ressources/ > $filename
 
-echo "
-	TESTS MANDATORY:
-"
+echo -e "\n         $purple TESTS MANDATORY: \n"
 
 while read -r line; do
 
 	nm ressources/$line > test_result_nm.txt
 	../ft_nm ressources/$line > test_result_ft_nm.txt
 
-	if ! diff -I 'round-trip*' test_result_nm.txt test_result_ft_nm.txt 
-	then
-		echo -e "test :$yellow $line $red NOT PASSED $endcolor"
-	else
-		echo -e "test $yellow $line $green PASSED $endcolor"
+	if ! diff -I 'round-trip*' test_result_nm.txt test_result_ft_nm.txt; then
+            echo -e " $red [NOT PASSED] $endcolor $line "
+            # echo -e "   diff:" ; cat out # uncomment line to print the diff result
+        else
+            echo -e "   $green [PASSED]  $endcolor $line "
 	fi
 	rm test_result_nm.txt test_result_ft_nm.txt
 done < $filename
