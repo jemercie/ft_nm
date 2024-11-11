@@ -6,17 +6,17 @@ static bool     ft_isalnum(int c);
 static bool     ft_isalnum(int c);
 static bool is_upper(char c);
 
-int strcmp_no_case(char *s1, char *s2) {
+int strcmp_no_case(char *s1, char *s2, bool opt_r) {
     
-    size_t i = 0, j = 0;
+    size_t i = 0, j = 0, _s1 = 0, _s2 = 0;
 
     for (; s1[i] || s2[j]; i++, j++) {
 
-        for (; (s1[i] && !ft_isalnum(s1[i])); i++);
-        for (; (s2[j] && !ft_isalnum(s2[j])); j++);
+        for (; (s1[i] && !ft_isalnum(s1[i])); i++, _s1++);
+        for (; (s2[j] && !ft_isalnum(s2[j])); j++, _s2++);
 
         if (!s1[i] && !s2[j])
-            return 0;
+            return ((opt_r) ? 1 : 0);
         if (!s1[i]) 
             return -1;
         if (!s2[j]) 
@@ -32,15 +32,23 @@ int strcmp_no_case(char *s1, char *s2) {
     }
     i = 0;
     j = 0;
-    for (; (s1[i] && !ft_isalnum(s1[i])); i++);
-    for (; (s2[j] && !ft_isalnum(s2[j])); j++);
+    for (; (s1[i] && !ft_isalnum(s1[i])); i++)
+    ;
+    for (; (s2[j] && !ft_isalnum(s2[j])); j++)
+    ;
 
+    if (i == j && i == 0){
+        if (_s1 > _s2)
+            return 0;
+        return (opt_r ? 1 : 0);
+    }
     if (i < j)
         return 1;
     else if (s1[i] < s2[j])
         return 1;
-
-    return 0;
+    else if (i > j)
+        return 0;
+    return ((opt_r) ? 1 : 0);
 }
 
 static bool     ft_isalnum(int c){
