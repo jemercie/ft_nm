@@ -3,6 +3,7 @@
 
 # define ST_TYPE(symbol_table) (ELF64_ST_TYPE(symbol_table->st_info))
 # define ST_BIND(symbol_table) (ELF64_ST_BIND(symbol_table->st_info) )
+# define SYMBOL_TYPE(elf) (ELF64_ST_TYPE(elf.symbol_table->st_info))
 
 static int  get_symtab_index(Elf64_Ehdr *elf_header, Elf64_Shdr *section_hdr_table);
 static void init_elf_struct(t_file *file, t_elf64 *elf);
@@ -65,7 +66,7 @@ bool interpret_symbol_table_x64(t_file *file, t_options *options){
             if (symbol != '?')
                 lst = add_symbol_to_lst(SYMBOL_NAME(elf), SYMBOL_ADRESS(elf), symbol, lst, options);
         }
-        else if ((ELF64_ST_TYPE(elf.symbol_table->st_info) == STT_FILE || ELF64_ST_TYPE(elf.symbol_table->st_info) == STT_SECTION))
+        else if (SYMBOL_TYPE(elf) == STT_FILE || SYMBOL_TYPE(elf) == STT_SECTION)
             continue;
         else{
             symbol = resolve_symbol_type(elf.symbol_table, SECTION_HEADER(elf));
@@ -75,9 +76,8 @@ bool interpret_symbol_table_x64(t_file *file, t_options *options){
             lst = add_symbol_to_lst(SYMBOL_NAME(elf), SYMBOL_ADRESS(elf), symbol, lst, options);
         }
     }
-
     print_symbols_lst(lst, options, PADDING_LEN_64);
-    lst = NULL;
+
     return TRUE;
 }
 

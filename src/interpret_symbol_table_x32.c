@@ -3,6 +3,7 @@
 
 # define ST_TYPE(symbol_table) (ELF32_ST_TYPE(symbol_table->st_info))
 # define ST_BIND(symbol_table) (ELF32_ST_BIND(symbol_table->st_info) )
+# define SYMBOL_TYPE(elf) (ELF32_ST_TYPE(elf.symbol_table->st_info))
 
 static int  get_symtab_index(Elf32_Ehdr *elf_header, Elf32_Shdr *section_hdr_table);
 static void init_elf_struct(t_file *file, t_elf32 *elf);
@@ -28,7 +29,7 @@ static char resolve_symbol_type(Elf32_Sym   *symbol_table, Elf32_Shdr *section_h
         return 'R';
     else if (section_hdr && (ST_TYPE(symbol_table) == STT_OBJECT || ELF32_ST_TYPE(symbol_table->st_info) == STT_NOTYPE || ((section_hdr && (section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE) && (section_hdr->sh_type == SHT_INIT_ARRAY || section_hdr->sh_type == SHT_FINI_ARRAY || section_hdr->sh_type == SHT_DYNAMIC || section_hdr->sh_flags == SHT_SHLIB))) || section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE | SHF_TLS))))
         return section_hdr->sh_type == SHT_NOBITS ? 'B' : 'D';
-    else if (ELF32_ST_BIND(symbol_table->st_info) == STB_GNU_UNIQUE)
+    else if (ST_BIND(symbol_table) == STB_GNU_UNIQUE)
         return'u';
     else if (symbol_table->st_shndx == SHN_ABS)
        return 'A';
