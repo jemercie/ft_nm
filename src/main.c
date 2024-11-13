@@ -38,14 +38,15 @@ static void open_and_map_file_and_interpret_elf(char *filename, t_file *file, t_
 
 
     switch (arch){
-        case ELFCLASSNONE:
-            // err nm: Makefile: file format not recognized
-            break ;
+
         case ELFCLASS32:
             interpret_symbol_table_x32(file, options);
             break;
         case ELFCLASS64:
             interpret_symbol_table_x64(file, options);
+            break;
+        default:
+            PUT_ERROR_WRONG_FILE_FORMAT(filename);
             break;
     }
 

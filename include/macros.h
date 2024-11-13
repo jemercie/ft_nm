@@ -15,7 +15,6 @@
 
 # define SYMBOL_NAME(elf) (elf.strtab+elf.symbol_table->st_name)
 # define SYMBOL_ADRESS(elf) (elf.symbol_table->st_value)
-# define SYMBOL_TYPE(elf) (ELF64_ST_TYPE(elf.symbol_table->st_info))
 # define SECTION_HEADER(elf) (elf.symbol_table->st_shndx <= elf.header->e_shnum ? &elf.section_hdr[elf.symbol_table->st_shndx] : NULL)
 # define SH_FLAGS(section_hdr) (section_hdr->sh_flags)
 

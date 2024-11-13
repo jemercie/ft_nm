@@ -31,6 +31,9 @@ ft_putstr_fd(2, "ft_nm: invalid option -- \'"); write(2, option, 1); ft_putstr_f
 # define PRINT_ERROR_NO_SYMBOL_AND_EXIT(filename) \
 ft_putstr_fd(2, "ft_nm: "); ft_putstr_fd(2, filename); ft_putstr_fd(2, ": no symbols\n"), exit(1)
 
+# define PUT_ERROR_WRONG_FILE_FORMAT(filename)\
+ft_putstr_fd(2, "ft_nm: "); ft_putstr_fd(2, filename); ft_putstr_fd(2, ": file format not recognized\n")
+
 # define PRINT_USAGE_AND_EXIT(exit_code) \
 ft_putstr_fd(2, "Usage: nm [option(s)] [file(s)]\n\
  List symbols in [file(s)] (a.out by default).\n\
