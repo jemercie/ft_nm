@@ -1,13 +1,19 @@
 
 <h2 style="text-align:center">nm</h2>
 
-_name mangling_
-> GNU nm lists the symbols from object files objfile.... If no object files are listed as arguments, nm assumes the file a.out. 
 
-**use:**
+
+> GNU nm (name mangling) lists the symbols from object files objfile.... If no object files are listed as arguments, nm assumes the file a.out. 
+
+**usage:**
     nm \[*options*\] \[*objfile...\]
+    
+[doc most used](https://docs.oracle.com/cd/E19683-01/816-1386/6m7qcoblj/index.html#chapter7-27)
 
-### 3 colonnes:
+
+
+
+### 3 row:
 
     |  virtual adress  | symbol type |        symbol name       |
     -------------------------------------------------------------
@@ -65,15 +71,10 @@ _Uppercase is **External** symbol_
 
 
 
-options cool:
-    -A
-    -n (display in sorted order)
-    -g only external symbols (uppercase)
-    -S display size
 
-#### _"You have to work with ELF binaries. You have to handle x86_32, x64, object files, .so"_
 
 **ELF** _(Executable Linkable Format)_ is a common standard file format for executable files, object code, shared libraries, and core dumps.
+
 
 ## ELF header
 
@@ -81,7 +82,7 @@ options cool:
 
 The ELF header defines whether to use _32-bit_ or _64-bit_ addresses. The header contains three fields that are affected by this setting and offset other fields that follow them. The ELF header is **52 bytes long for 32-bit binaries** or **64 bytes long for 64-bit binaries.**
 
-struct containing file's metadata
+Struct  **Elf64/32_Ehdr** containing file's metadata
 
 ```typedef struct elf64_hdr {
   unsigned char e_ident[EI_NIDENT];  /* explain how the elf file need to be parsed */
@@ -101,7 +102,8 @@ struct containing file's metadata
 } Elf64_Ehdr;
 ```
 
-###         e_ident
+####         e_ident values
+
 ```
             /* magic number, the same for all elf files  hex 7f and E, L, F encoded as ascii */
 #define        EI_MAG0                0 // 7f
@@ -118,7 +120,7 @@ struct containing file's metadata
 #define        EI_PAD                 8 // padding
 ```
 
-###         e_type
+####         e_type values
 ```
 0x00 	ET_NONE 	// Unknown.
 0x01 	ET_REL 	    // Relocatable file (object files)
@@ -132,9 +134,10 @@ struct containing file's metadata
 ```
 
 
-## Segments and sections: _they represent data from the ELF file_
+### Segments and sections: _they represent data from the ELF file_
 
-## Segments
+
+#### Segments
 
 > readelf --segments _binary_
 > 
@@ -154,7 +157,7 @@ Program Header Table is specified in the ELF header (**e_phoff**), it also
 specifies the size of each program header entry (**e_phentsize**) and the number of 
 entries (**e_phnum**)
 
-## Program header
+#### Program header
 _Describing zero or more memory segments_
 >
 ```
@@ -213,17 +216,19 @@ Size of the segment in memory, if this is larger than the size in the file, the 
 Specifies the alignment requirement for the segment
 
 
-## Sections
+### Sections
 
-defined by a section header. Sections headers are in an array called the section header table 
+Defined by a *section header*. Sections headers are in an array called the *section header table*
 specified in the ELF header (**e_shoff**), it also specifies the size of each program header 
 entry (**e_shentsize**) and the numbre of entries (**e_shnum**)
 
-they are used only duriong linking and by tools such as debuggers. During execution and also 
+They are used only during linking and by tools such as debuggers. During execution and also 
 when reverse engeineering, only the segments count.
 
-we can test it : use sstrip to remove all sections from an executable and use readelf --sections.
+We can  use sstrip to remove all sections from an executable and use readelf --sections.
  It prints an error but our executable still runs just fine
+ 
+#### section header
 
 ```
 typedef struct elf64_shdr {
@@ -240,11 +245,11 @@ typedef struct elf64_shdr {
 } Elf64_Shdr;
 ```
 
--   sh_name
+-   **sh_name**
     the name of the section, not a string but this index points to the section number string table 
     (**e_shstrndx** in the elf header) containing the name of the sections. The name (sh_name) just specifies an offset into that string table.
 
--   sh_type
+-   **sh_type**
 
         values:
             #define SHT_NULL        0   inactive section, can be ignored
@@ -267,7 +272,7 @@ typedef struct elf64_shdr {
             #define SHT_HIUSER        0xffffffff
 
 -   sh_flags
-    WRITE   
+  
 
 ### symbol struct
 
@@ -284,122 +289,4 @@ typedef struct elf64_sym {
 } Elf64_Sym;
 ```
 
-typedef __u32        Elf32_Addr;
-typedef __u16        Elf32_Half;
-typedef __u32        Elf32_Off;
-typedef __s32        Elf32_Sword;
-typedef __u32        Elf32_Word;
-
-typedef __u64        Elf64_Addr;
-typedef __u16        Elf64_Half;
-typedef __s16        Elf64_SHalf;
-typedef __u64        Elf64_Off;
-typedef __s32        Elf64_Sword;
-typedef __u32        Elf64_Word;
-typedef __u64        Elf64_Xword;
-typedef __s64        Elf64_Sxword;
-
-
-    // if STT_FILE continue
-    // A           Absolute symbol 
-            // 
-    // b B uninitialized data section
-            //  SHT_NOBITS && SHF_ALLOC + SHF_WRITE 
-
-    // C           Common symbols, uninitialized data.
-            // symbol_table[j]->st_shndx == SHN_COMMON
-    // D -  d      In the initialized data section
-            // ELF64_ST_TYPE(symbol_table->st_info) == STT_OBJECT
-
-
-    // G - g       Initialized data section for small objects
-
-
-    // i           For PE format files this indicates that the symbol is in a section specific to the implementation of DLLs
-
-
-    // N           Debugging symbol
-
-
-    // p           The symbols is in a stack unwind section
-
-
-    // R - r       The symbol is in a read only data section
-            //  SHT_PROGBITS && SHF_ALLOC 
-
-    // S - s       The symbol is in an uninitialized data section for small objects
-
-    // T - t       The symbol is in the text (code) section
-            // // ELF64_ST_TYPE(symbol_table->st_info) == STT_FUNC
-
-    // U           Undefined symbol right now
-            // symbol_table[j]->st_shndx == SHN_UNDEF
-
-    // V - v       The symbol is a weak object. When a weak defined symbol is linked with a normal defined symbol,
-
-    // W - w       The symbol is a weak symbol that has not been specifically tagged as a weak object symbol.
-
-    // - The symbol is a stabs symbol in an a.out object file. In this case, the next values printed are the stabs other field, the stabs desc field, and the stab type. Stabs symbols are used to hold debugging information. 
-    // ? The symbol type is unknown, or object file format specific. 
-
-
-        idk how to optimize flags(etc) checking, so putting them in decressant occurence order
-    
-    A
-        symbol_table->st_shndx == SHN_ABS
-    a 2
-
-    B 170
-    b 433
-
-    C
-        symbol_table->st_shndx == SHN_COMMON
-    
-    D 192
-    d 309
-
-    G
-
-    I 0
-    i 24
-
-    N
-
-    P
-
-    R 72
-    r 350
-
-    S
-
-    T 2612
-    t 1694
-
-    U 1713
-    u
-        symbol_table->st_shndx == SHN_UNDEF
-
-    V 250
-    v
-
-    W 465
-    w 38
-
-    t
-    u
-    b
-    d
-    w
-    v
-    
-        // parsing tests
-
-    ./ft_nm --debug-syms --extern-only --undefined-only --no-sort --reverse-sort ft_nm
-
-    ./ft_nm --debug-syms --extern_only --undefined-only --no-sort --reverse-sort ft_nm 
-
-    ./ft_nm -a -g -u -r -p ft_nm
-
-    ./ft_nm -agurp ft_nm
-    
-    ./ft_nm -aguhrp ft_nm
+    idk how to optimize flags(etc) checking, so i put them in kind of decressant occurence order
