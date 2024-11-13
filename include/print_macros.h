@@ -23,14 +23,24 @@ ft_putstr_fd(2, "ft_nm: fstat : an error occured getting the file size\n");
 ft_putstr_fd(2, "ft_nm: mmap : an error occured mapping the file in the memory\n");
 
 # define PRINT_ERROR_COMPILING_REGEX_AND_EXIT \
-ft_putstr_fd(2, "ft_nm: regcomp : an error occured compiling regex\n"); exit(0)
+ft_putstr_fd(2, "ft_nm: regcomp : an error occured compiling regex\n"); exit(1)
 
-# define PRINT_ERROR_UNKNOWN_OPTION_AND_EXIT(option) \
-ft_putstr_fd(2, "ft_nm: invalid option -- \'"); write(2, option, 1); ft_putstr_fd(2, "\'\n"); exit(0)
+# define PRINT_ERROR_UNKNOWN_OPTION(option) \
+ft_putstr_fd(2, "ft_nm: invalid option -- \'"); write(2, option, 1); ft_putstr_fd(2, "\'\n")
 
 # define PRINT_ERROR_NO_SYMBOL_AND_EXIT(filename) \
-ft_putstr_fd(2, "ft_nm: "); ft_putstr_fd(2, filename); ft_putstr_fd(2, ": no symbols\n"); exit(0)
+ft_putstr_fd(2, "ft_nm: "); ft_putstr_fd(2, filename); ft_putstr_fd(2, ": no symbols\n"), exit(1)
 
-
+# define PRINT_USAGE_AND_EXIT(exit_code) \
+ft_putstr_fd(2, "Usage: nm [option(s)] [file(s)]\n\
+ List symbols in [file(s)] (a.out by default).\n\
+ The options are:\n\
+  -a, --debug-syms       Display debugger-only symbols\n\
+  -g, --extern-only      Display only external symbols\n\
+  -p, --no-sort          Do not sort the symbols\n\
+  -r, --reverse-sort     Reverse the sense of the sort\n\
+  -u, --undefined-only   Display only undefined symbols\n\
+  -?, --help             Display this information\n\
+nm: supported targets: x86_32, x64, object files, .so\n"); exit(exit_code)
 
 #endif

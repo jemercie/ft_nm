@@ -3,10 +3,10 @@ FLAGS			=	-Wall -Wextra -Werror -g
 SRC				=	src/main.c								\
 					src/open_and_map_file.c					\
 					src/regex_parse_options.c				\
-					src/find_and_print_symbol_table_x64.c	\
-					src/find_and_print_symbol_table_x32.c	\
+					src/interpret_symbol_table_x64.c		\
+					src/interpret_symbol_table_x32.c		\
 					src/add_symbol_to_lst.c					\
-					src/print_lst.c							\
+					src/print_symbols_lst.c					\
 					src/utils.c								\
 
 OBJ				=	$(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)

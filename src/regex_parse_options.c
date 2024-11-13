@@ -12,8 +12,7 @@ static bool regex_check_format(const char *tested_str, const char *regex);
 int parse_options(t_options *options, char **argv){
 
     int nb_args = 0;
-    memset(options, 0, sizeof(t_options));
-
+    ft_memset(options, 0, sizeof(t_options));
     for (int i = 1; argv[i]; i++){
         int ret = regex_check_arg_type(argv[i]);
         switch (ret)
@@ -30,6 +29,9 @@ int parse_options(t_options *options, char **argv){
             nb_args++;
             break;
         }
+    }
+    if (options->help){
+        PRINT_USAGE_AND_EXIT(0);
     }
     return nb_args;
 }
@@ -50,9 +52,6 @@ static void set_letter_options(t_options *options, char *option_arg){
     for(int i = 1; option_arg[i]; i++){
         switch (option_arg[i])
         {
-        case 'a':
-            options->debug_symbols = true;
-            break;
         case 'g':
             options->extern_only = true;
             break;
@@ -65,8 +64,12 @@ static void set_letter_options(t_options *options, char *option_arg){
         case 'p':
             options->no_sort = true;
             break;
+        case '?':
+            options->help = true;
+            break;
         default :
-            PRINT_ERROR_UNKNOWN_OPTION_AND_EXIT(&option_arg[i]);
+            PRINT_ERROR_UNKNOWN_OPTION(&option_arg[i]);
+            PRINT_USAGE_AND_EXIT(1);
         }
     }
     option_arg = NULL;
@@ -84,7 +87,8 @@ static void regex_set_full_name_options(bool *options, char *option_arg){
             return ;
         }
     }
-    PRINT_ERROR_UNKNOWN_OPTION_AND_EXIT(&option_arg[i]);
+    PRINT_ERROR_UNKNOWN_OPTION(&option_arg[i]);
+    PRINT_USAGE_AND_EXIT(1);
 }
 
 static bool regex_check_format(const char *tested_str, const char *regex){

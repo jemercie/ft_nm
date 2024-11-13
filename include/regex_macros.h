@@ -5,11 +5,11 @@
 # define NB_OF_OPTIONS 5
 
 # define REGEX_FULL_NAME_OPTIONS_TAB {\
-    "^--debug-syms$",\
     "^--extern-only$",\
     "^--undefined-only$",\
     "^--reverse-sort$",\
     "^--no-sort$",\
+    "^--help$",\
 };
 
 

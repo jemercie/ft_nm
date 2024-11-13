@@ -16,7 +16,11 @@ static bool map_file(t_file *file);
 // nm: test_script.sh: file format not recognized
 
 
+
 bool open_and_map_file(char *filename, t_file *file){
+
+    if (!filename)
+        return FALSE;
 
     memset(file, 0, sizeof(t_file));
     if (!open_file(filename, &file->fd))

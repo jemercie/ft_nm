@@ -2,8 +2,6 @@
 #include <unistd.h>
 
 static bool     ft_isalnum(int c);
-
-static bool     ft_isalnum(int c);
 static bool is_upper(char c);
 
 int strcmp_no_case(char *s1, char *s2, bool opt_r) {
@@ -51,7 +49,7 @@ int strcmp_no_case(char *s1, char *s2, bool opt_r) {
     return ((opt_r) ? 1 : 0);
 }
 
-static bool     ft_isalnum(int c){
+static bool ft_isalnum(int c){
 
     if ((c > 47 && c < 58) || (c > 64 && c < 91) || (c > 96 && c < 123))
         return TRUE;

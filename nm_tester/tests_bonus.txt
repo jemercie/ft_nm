@@ -1,7 +1,6 @@
---debug-syms --extern-only --undefined-only --no-sort --reverse-sort
--a -g -u -r -p
--agurp
--a 
+--extern-only --undefined-only --no-sort --reverse-sort
+-g -u -r -p
+-gurp
 -g 
 -u 
 -r 

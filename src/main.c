@@ -3,15 +3,14 @@
 
 /*
         TODO
-    - compile libft properly or maybe rewrite just useful functions
-    - replace every forbidden functions (printf etc)
     - make the resolve symbol type function less ugly
-    - faire un truc pour les symboles de debug
-
+    - rm errors.h 
+    - put some complexity inside macros
+    - print and free lst
 */
 
 
-static void open_and_map_file_and_interpret_elf_header(char *filename, t_file *file, t_options *options);
+static void open_and_map_file_and_interpret_elf(char *filename, t_file *file, t_options *options);
 
 
 int main(int argc, char **argv){
@@ -20,35 +19,37 @@ int main(int argc, char **argv){
     t_options options;
 
     if (parse_options(&options, argv) == NO_FILE_ARG){
-        open_and_map_file_and_interpret_elf_header("a.out", &file, &options);
+        open_and_map_file_and_interpret_elf("a.out", &file, &options);
         return END;
     }
 
     for (int i = 1; i < argc; i++){
-        open_and_map_file_and_interpret_elf_header(argv[i], &file, &options);
+        open_and_map_file_and_interpret_elf(argv[i], &file, &options);
     }
     return END;
 }
 
-static void open_and_map_file_and_interpret_elf_header(char *filename, t_file *file, t_options *options){
+static void open_and_map_file_and_interpret_elf(char *filename, t_file *file, t_options *options){
 
     if (!filename || !open_and_map_file(filename, file))
         return ;
     
-    short arch = file->file[EI_CLASS];
+    short       arch = file->file[EI_CLASS];
+
 
     switch (arch){
         case ELFCLASSNONE:
             // err nm: Makefile: file format not recognized
-            return ;
+            break ;
         case ELFCLASS32:
-            find_and_print_symbol_table_x32(file, options);
-            return;
+            interpret_symbol_table_x32(file, options);
+            break;
         case ELFCLASS64:
-            find_and_print_symbol_table_x64(file, options);
-            return;
+            interpret_symbol_table_x64(file, options);
+            break;
     }
 
     munmap(file->file, file->infos.st_size);
+    close(file->fd);
     return ;
 }

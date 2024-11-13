@@ -5,13 +5,26 @@ static char	*ft_int_to_hex_str(int num);
 static char *fill_padding_with_zeros_adress(short padding_len, uint64_t adress);
 static char *fill_padding_with_spaces(short padding_len);
 static char *add_symbol_to_buffer(char *buffer, char symbol, short padding_len);
+static void print_lst(t_symbol *lst, short padding_len);
+static void recursive_print_lst(t_symbol *lst, short padding_len);
 
-void print_lst(t_symbol *lst, short padding_len){
+void print_symbols_lst(t_symbol *lst, t_options *options, int padding_len){
+
+    if (options->reverse_sort & !options->no_sort)
+        recursive_print_lst(lst, padding_len);
+    else
+        print_lst(lst, padding_len);
+    lst = NULL;
+}
+
+static void print_lst(t_symbol *lst, short padding_len){
 
     t_symbol *symbol = lst;
+    t_symbol *node_to_free = NULL;
 	static char *buffer;
 
-    for (;symbol; symbol= symbol->next){
+    while (symbol){
+
         if (symbol->symbol == 'U' || symbol->symbol == 'w')
 			buffer = fill_padding_with_spaces(padding_len);
         else
@@ -19,10 +32,15 @@ void print_lst(t_symbol *lst, short padding_len){
 		buffer = add_symbol_to_buffer(buffer, symbol->symbol, padding_len-1);
 
         PRINT_SYMBOL_LINE(buffer, symbol->name);
+
+        node_to_free = symbol;
+        symbol = symbol->next;
+        free(node_to_free);
+        node_to_free = NULL;
     }
 }
 
-void recursive_print_lst(t_symbol *lst, short padding_len){
+static void recursive_print_lst(t_symbol *lst, short padding_len){
 
     t_symbol *symbol = lst;
 	static char *buffer;
@@ -37,6 +55,9 @@ void recursive_print_lst(t_symbol *lst, short padding_len){
 	buffer = add_symbol_to_buffer(buffer, symbol->symbol, padding_len-1);
 
     PRINT_SYMBOL_LINE(buffer, symbol->name);
+    free(symbol);
+    symbol = NULL;
+
 }
 
 static char *fill_padding_with_zeros_adress(short padding_len, uint64_t adress){

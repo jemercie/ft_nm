@@ -23,7 +23,8 @@ while read -r line_args; do
 
         if ! diff test_result_nm.txt test_result_ft_nm.txt > out; then
             echo -e " $red [NOT PASSED] $endcolor $line "
-            # echo -e "   diff:" ; cat out # uncomment line to print the diff result
+            echo -e "  $blue$line_args$endcolor $line " >> not_passed
+            # echo -e "   diff:" ; cat out # uncomment line to print diff result
         else
             echo -e "   $green [PASSED]  $endcolor $line "
         fi
@@ -33,3 +34,12 @@ done < "$filename_bonus"
 
 rm out
 rm "$filename"
+if [ -f not_passed ] ; then
+    echo -e "\n$red    NOT PASSED:\n$endcolor"
+    cat not_passed ; echo ""
+    rm not_passed
+else
+    echo -e "\n$pink        E.T. LOOKS FINE$endcolor\n\n
+    (not talking about the fact that you abandoned -a u cunt)\n
+    (2 years and you still don't know how to increment a ptr, what a shame)\n"
+fi

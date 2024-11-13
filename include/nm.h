@@ -32,11 +32,11 @@ typedef struct  s_symbol{
 
 typedef struct  s_options{
 
-    bool    debug_symbols;
     bool    extern_only;
     bool    undefined_only;
     bool    reverse_sort;
     bool    no_sort;
+    bool    help;
 }               t_options;
 
 typedef struct  s_elf32{
@@ -69,20 +69,19 @@ bool        open_and_map_file(char *filename, t_file *file);
 int         parse_options(t_options *options, char **argv);
                     // regex_parse_options.c
 
-bool        find_and_print_symbol_table_x64(t_file *file, t_options *options);
+bool        interpret_symbol_table_x64(t_file *file, t_options *options);
                     // find_and_print_symbol_table_x64
 
-bool        find_and_print_symbol_table_x32(t_file *file, t_options *options);
+bool        interpret_symbol_table_x32(t_file *file, t_options *options);
                     // find_and_print_symbol_table_x32
 
-t_symbol    *add_symbol_to_lst(t_symbol *lst, char *name, char symbol, uint64_t adress, t_options *options);
+t_symbol    *add_symbol_to_lst(char *name, uint64_t adress, char symbol, t_symbol *lst, t_options *options);
                     // add_symbol_to_lst.c
 
-void        print_lst(t_symbol *lst, short padding_len);
-void        recursive_print_lst(t_symbol *lst, short padding_len);
-                    // print_lst.c
+void        print_symbols_lst(t_symbol *lst, t_options *options, int padding_len);
+                    // print_symbols_lst.c
 
-int         strcmp_no_case(char *s1, char *s2);
+int         strcmp_no_case(char *s1, char *s2, bool opt_r);
 void        ft_putstr_fd( int fd, char *str);
 void        *ft_memset(void *s, int c, size_t n);
 size_t      ft_strlen(const char *str);

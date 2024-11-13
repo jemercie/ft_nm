@@ -17,9 +17,9 @@ while read -r line; do
 	nm ressources/$line > test_result_nm.txt
 	../ft_nm ressources/$line > test_result_ft_nm.txt
 
-	if ! diff -I 'round-trip*' test_result_nm.txt test_result_ft_nm.txt; then
+	if ! diff test_result_nm.txt test_result_ft_nm.txt; then
             echo -e " $red [NOT PASSED] $endcolor $line "
-            # echo -e "   diff:" ; cat out # uncomment line to print the diff result
+            # echo -e "   diff:" ; cat out # uncomment next line to print the diff result
         else
             echo -e "   $green [PASSED]  $endcolor $line "
 	fi
