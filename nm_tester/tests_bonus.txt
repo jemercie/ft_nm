@@ -1,4 +1,4 @@
---extern-only --undefined-only --no-sort --reverse-sort
+--extern-only --debug-syms --undefined-only --no-sort --reverse-sort
 -g -u -r -p
 -gurp
 -g 
@@ -6,3 +6,4 @@
 -r 
 -p 
 -rp
+

@@ -15,11 +15,22 @@ echo -e "\n         $purple TESTS ERRORS: $endcolor"
 while read -r line_args; do
     echo -e "\n$pink test : $blue $line_args $endcolor"
 
-        nm $line $line_args
+        nm $line_args
         # echo -e "               return: $?"
-        ../ft_nm $line $line_args
+        ../ft_nm $line_args
         # echo -e "               return: $?"
 
 
 done < "$filename"
 
+
+echo -e "\n$pink test : $blue wrong permission $endcolor"
+chmod 000 run_tests.sh
+nm run_tests.sh
+../ft_nm run_tests.sh
+echo -e "(outputs not similar bcs we can't do it w the authorized functions)"
+
+echo -e "\n$pink test : $blue wrong format $endcolor"
+chmod 777 run_tests.sh
+nm run_tests.sh
+../ft_nm run_tests.sh
