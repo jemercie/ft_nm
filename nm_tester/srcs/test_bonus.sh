@@ -8,7 +8,7 @@ purple="\e[38;2;150;150;255m"
 endcolor="\e[0m"
 
 filename=tests.txt
-filename_bonus=tests_bonus.txt
+filename_bonus=srcs/tests_bonus.txt
 
 ls ressources/ > "$filename"
 
@@ -19,7 +19,7 @@ while read -r line_args; do
     echo -e "\n$pink test : $blue $line_args $endcolor"
     while read -r line; do
         nm ressources/"$line" $line_args > test_result_nm.txt
-        ../ft_nm ressources/"$line" $line_args > test_result_ft_nm.txt
+        ./ft_nm ressources/"$line" $line_args > test_result_ft_nm.txt
 
         if ! diff test_result_nm.txt test_result_ft_nm.txt > out; then
             echo -e " $red [NOT PASSED] $endcolor $line "
@@ -37,9 +37,12 @@ rm "$filename"
 if [ -f not_passed ] ; then
     echo -e "\n$red    NOT PASSED:\n$endcolor"
     cat not_passed ; echo ""
-    rm not_passed
 else
     echo -e "\n$pink        E.T. LOOKS FINE$endcolor\n\n
     (not talking about the fact that you abandoned -a u cunt)\n
     (2 years and you still don't know how to increment a ptr, what a shame)\n"
+fi
+
+if  [ -f not_passed ] ; then
+    rm not_passed
 fi
