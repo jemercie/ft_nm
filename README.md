@@ -1,8 +1,16 @@
 
-<h2 style="text-align:center">nm</h2>
+<h2 style="text-align:center">ft_nm</h2>
 
+"This project is about recoding the command nm."
 
 > GNU nm (name mangling) lists the symbols from object files objfile.... If no object files are listed as arguments, nm assumes the file a.out. 
+
+supported flags:
+    -g (--extern-only) 
+    -u (--undefined-only)
+    -r (reverse-sort) 
+    -p (--no-sort) 
+    -? (--help)
 
 **usage:**
     nm \[*options*\] \[*objfile...\]
