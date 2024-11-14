@@ -27,3 +27,7 @@ elif [ "$*" = "all" ]; then
 else
     echo -e "$usage"
 fi
+
+if [ -f ft_nm ]; then
+    rm ft_nm
+fi
