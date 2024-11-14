@@ -1,42 +1,117 @@
 #include "nm.h"
-#include <elf.h>
 
-# define ST_TYPE(symbol_table) (ELF64_ST_TYPE(symbol_table->st_info))
-# define ST_BIND(symbol_table) (ELF64_ST_BIND(symbol_table->st_info) )
-# define SYMBOL_TYPE(elf) (ELF64_ST_TYPE(elf.symbol_table->st_info))
+# define ST_TYPE(symbol_table)  (ELF64_ST_TYPE(symbol_table->st_info))
+# define ST_BIND(symbol_table)  (ELF64_ST_BIND(symbol_table->st_info))
+# define SYMBOL_TYPE(elf)       (ELF64_ST_TYPE(elf.symbol_table->st_info))
 
-static int  get_symtab_index(Elf64_Ehdr *elf_header, Elf64_Shdr *section_hdr_table);
+static char resolve_symbol_type(Elf64_Sym   *symbol_table, Elf64_Shdr *section_hdr);
+static bool symbol_is_data_section(Elf64_Sym   *symbol_table, Elf64_Shdr *section_hdr);
+static bool symbol_is_read_only_data_section(Elf64_Shdr *section_hdr);
+static char resolve_undefined_symbol_type(Elf64_Sym   *symbol_table);
 static void init_elf_struct(t_file *file, t_elf64 *elf);
+static int  get_symtab_index(Elf64_Ehdr *elf_header, Elf64_Shdr *section_hdr_table);
+
+
+bool interpret_symbol_table_x64(t_file *file, t_options *opt){
+
+    static t_elf64  elf;
+    char            symbol;
+    t_symbol        *lst = NULL;
+
+    init_elf_struct(file, &elf);
+
+    for (size_t j = 1; j < elf.symbols_nb; j++, elf.symbol_table++) {
+        
+        if (SYMBOL_TYPE(elf) == STT_FILE || SYMBOL_TYPE(elf) == STT_SECTION)
+            continue;
+        else if (opt->undefined_only)
+        {
+            symbol = resolve_undefined_symbol_type(elf.symbol_table);
+            if (symbol != UNDEFINED_SYMBOL)
+                add_symbol_to_lst(SYMBOL_NAME(elf), SYMBOL_ADRESS(elf), symbol, &lst, opt);
+        }
+        else{
+            symbol = resolve_symbol_type(elf.symbol_table, SECTION_HEADER(elf));
+            if (SYMBOL_IS_LOCAL(elf) && symbol != UNDEFINED_SYMBOL)
+                symbol += 32;
+            add_symbol_to_lst(SYMBOL_NAME(elf), SYMBOL_ADRESS(elf), symbol, &lst, opt);
+        }
+    }
+    print_symbols_lst(lst, opt, PADDING_LEN_64);
+
+    return TRUE;
+}
 
 static char resolve_symbol_type(Elf64_Sym   *symbol_table, Elf64_Shdr *section_hdr){
-
-    char c = '\0';
 
     if (ST_TYPE(symbol_table) == STT_GNU_IFUNC)
         return 'i';
     else if (ST_BIND(symbol_table) == STB_WEAK){
-        if (ST_TYPE(symbol_table)== STT_OBJECT)
-            return symbol_table->st_shndx == SHN_UNDEF ? 'v' : 'V';
-        return symbol_table->st_shndx == SHN_UNDEF ? 'w' : 'W';
-    }
-    else if ((section_hdr && (section_hdr->sh_type == SHT_PROGBITS)&& section_hdr->sh_flags == (SHF_ALLOC | SHF_EXECINSTR)))
-        return 'T';
-    else if (symbol_table->st_shndx == SHN_UNDEF)
-        return 'U';
-    else if ((section_hdr && section_hdr->sh_type == SHT_PROGBITS && section_hdr->sh_flags == (SHF_ALLOC) )|| (section_hdr && ( (section_hdr->sh_flags & SHF_STRINGS) > 0 || section_hdr->sh_type == SHT_REL || section_hdr->sh_type == SHT_RELA || (section_hdr && section_hdr->sh_type == SHT_NOTE))))
-        return 'R';
-    else if (section_hdr && (ST_TYPE(symbol_table) == STT_OBJECT || ELF32_ST_TYPE(symbol_table->st_info) == STT_NOTYPE || ((section_hdr && (section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE) && (section_hdr->sh_type == SHT_INIT_ARRAY || section_hdr->sh_type == SHT_FINI_ARRAY || section_hdr->sh_type == SHT_DYNAMIC || section_hdr->sh_flags == SHT_SHLIB))) || section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE | SHF_TLS))))
-        return section_hdr->sh_type == SHT_NOBITS ? 'B' : 'D';
-    else if (ELF32_ST_BIND(symbol_table->st_info) == STB_GNU_UNIQUE)
-        return'u';
-    else if (symbol_table->st_shndx == SHN_ABS)
-       return 'A';
-    else if (symbol_table->st_shndx == SHN_COMMON)
-        return 'C';
-    else if ( c == 'K')
-        return '?';
 
-    return c;
+        if (ST_TYPE(symbol_table)== STT_OBJECT)
+            return SH_INDEX(symbol_table) == SHN_UNDEF ? 'v' : 'V';
+        return SH_INDEX(symbol_table) == SHN_UNDEF ? 'w' : 'W';
+    }
+    else if (section_hdr && (SH_TYPE(symbol_table) == SHT_PROGBITS)&& \
+                SH_FLAG(section_hdr) == (SHF_ALLOC | SHF_EXECINSTR))
+        return 'T';
+    else if (SH_INDEX(symbol_table) == SHN_UNDEF)
+        return 'U';
+    else if (symbol_is_read_only_data_section(section_hdr))
+        return 'R';
+    else if (symbol_is_data_section(symbol_table, section_hdr))
+        return SH_TYPE(symbol_table) == SHT_NOBITS ? 'B' : 'D';
+    else if (ST_BIND(symbol_table) == STB_GNU_UNIQUE)
+        return'u';
+    else if (SH_INDEX(symbol_table) == SHN_ABS)
+       return 'A';
+    else if (SH_INDEX(symbol_table) == SHN_COMMON)
+        return 'C';
+
+    return '?';
+}
+
+static bool symbol_is_data_section(Elf64_Sym   *symbol_table, Elf64_Shdr *section_hdr){
+
+    if (!section_hdr)
+        return FALSE;
+    
+    if (ST_TYPE(symbol_table) == STT_OBJECT)
+        return TRUE;
+    else if (ST_TYPE(symbol_table) == STT_NOTYPE)
+        return TRUE;
+    else if (section_hdr->sh_type == SHT_INIT_ARRAY)
+        return TRUE;
+    else if (section_hdr->sh_type == SHT_FINI_ARRAY)
+        return TRUE;
+    else if (section_hdr->sh_type == SHT_DYNAMIC)
+        return TRUE;
+    else if (section_hdr->sh_flags == SHT_SHLIB)
+        return TRUE;
+    else if (section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE | SHF_TLS))
+        return TRUE;
+
+    return FALSE;
+}
+
+static bool symbol_is_read_only_data_section(Elf64_Shdr *section_hdr){
+    
+    if (!section_hdr)
+        return FALSE;
+    
+    if (section_hdr->sh_type == SHT_REL)
+        return TRUE;
+    else if (section_hdr->sh_type == SHT_RELA)
+        return TRUE;
+    else if (section_hdr->sh_type == SHT_NOTE)
+        return TRUE;
+    else if ((section_hdr->sh_flags & SHF_STRINGS) > 0)
+        return TRUE;
+    else if (section_hdr->sh_type == SHT_PROGBITS && \
+             section_hdr->sh_flags == (SHF_ALLOC) )
+        return TRUE;
+
+    return FALSE;
 }
 
 static char resolve_undefined_symbol_type(Elf64_Sym   *symbol_table){
@@ -50,45 +125,6 @@ static char resolve_undefined_symbol_type(Elf64_Sym   *symbol_table){
         return 'U';
     
     return '?';
-}
-
-bool interpret_symbol_table_x64(t_file *file, t_options *options){
-
-    static t_elf64  elf;
-    char            symbol;
-    t_symbol    *lst = NULL;
-
-    init_elf_struct(file, &elf);
-
-    for (size_t j = 1; j < elf.symbols_nb; j++, elf.symbol_table++) {
-        if (options->undefined_only){
-            symbol = resolve_undefined_symbol_type(elf.symbol_table);
-            if (symbol != '?')
-                lst = add_symbol_to_lst(SYMBOL_NAME(elf), SYMBOL_ADRESS(elf), symbol, lst, options);
-        }
-        else if (SYMBOL_TYPE(elf) == STT_FILE || SYMBOL_TYPE(elf) == STT_SECTION)
-            continue;
-        else{
-            symbol = resolve_symbol_type(elf.symbol_table, SECTION_HEADER(elf));
-            
-            if (ELF64_ST_BIND(elf.symbol_table->st_info) == STB_LOCAL && symbol != UNDEFINED_SYMBOL)
-                symbol += 32;
-            lst = add_symbol_to_lst(SYMBOL_NAME(elf), SYMBOL_ADRESS(elf), symbol, lst, options);
-        }
-    }
-    print_symbols_lst(lst, options, PADDING_LEN_64);
-
-    return TRUE;
-}
-
-static int get_symtab_index(Elf64_Ehdr *elf_header, Elf64_Shdr *section_hdr_table){
-
-        for (int i = 0; i < elf_header->e_shnum; i++){
-        if (section_hdr_table[i].sh_type == SHT_SYMTAB){
-            return i;
-        }
-    }
-    return -1;
 }
 
 static void init_elf_struct(t_file *file, t_elf64 *elf){
@@ -109,4 +145,14 @@ static void init_elf_struct(t_file *file, t_elf64 *elf){
     elf->symbols_nb     = elf->section_hdr[elf->symtab_index].sh_size / sizeof(Elf64_Sym);
     elf->symbol_table++;
 
+}
+
+static int get_symtab_index(Elf64_Ehdr *elf_header, Elf64_Shdr *section_hdr_table){
+
+        for (int i = 0; i < elf_header->e_shnum; i++){
+        if (section_hdr_table[i].sh_type == SHT_SYMTAB){
+            return i;
+        }
+    }
+    return -1;
 }

@@ -3,14 +3,32 @@
 
 
 
+    else if (section_hdr && ((section_hdr->sh_type == SHT_PROGBITS && \
+                            section_hdr->sh_flags == (SHF_ALLOC) )|| \
+                            (section_hdr->sh_flags & SHF_STRINGS) > 0 || \
+                            ST_TYPE(symbol_table)section_hdr->sh_type == SHT_REL || \
+                            ST_TYPE(symbol_table)section_hdr->sh_type == SHT_RELA || \
+                            ST_TYPE(symbol_table)section_hdr->sh_type == SHT_NOTE))
+        return 'R';
+    else if (section_hdr &&(ST_TYPE(symbol_table) == STT_OBJECT || \
+                            ST_TYPE(symbol_table) == STT_NOTYPE || \
+                           (ST_TYPE(symbol_table) == SHT_INIT_ARRAY || \
+                            ST_TYPE(symbol_table) == SHT_FINI_ARRAY || \
+                            ST_TYPE(symbol_table) == SHT_DYNAMIC || \
+                            section_hdr->sh_flags == SHT_SHLIB) || \
+                            section_hdr->sh_flags == (SHF_ALLOC | SHF_WRITE | SHF_TLS)))
+        return ST_TYPE(symbol_table) == SHT_NOBITS ? 'B' : 'D';
+        
+
+
 > GNU nm (name mangling) lists the symbols from object files objfile.... If no object files are listed as arguments, nm assumes the file a.out. 
 
 **usage:**
     nm \[*options*\] \[*objfile...\]
     
-[doc most used](https://docs.oracle.com/cd/E19683-01/816-1386/6m7qcoblj/index.html#chapter7-27)
+[doc](https://docs.oracle.com/cd/E19683-01/816-1386/6m7qcoblj/index.html#chapter7-27)
 
-
+[elf.h](https://sites.uclouvain.be/SystInfo/usr/include/linux/elf.h.html)
 
 
 ### 3 row:

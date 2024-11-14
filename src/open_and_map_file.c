@@ -1,27 +1,21 @@
 #include "macros.h"
 #include "nm.h"
-#include "print_macros.h"
+#include "print_errors_macros.h"
 
-#include <sys/types.h>  // open
-#include <fcntl.h>      // open
-#include <string.h>     // memset
-#include <sys/mman.h>   // mmap
-
+#include <sys/types.h>  // open()
+#include <fcntl.h>      // open()
+#include <string.h>     // memset()
+#include <sys/mman.h>   // mmap()
 
 static bool open_file(char *file, int *fd);
 static bool get_file_size(t_file *file);
 static bool map_file(t_file *file);
-
-// nm test_script.sh 
-// nm: test_script.sh: file format not recognized
-
 
 
 bool open_and_map_file(char *filename, t_file *file){
 
     if (!filename)
         return FALSE;
-
     memset(file, 0, sizeof(t_file));
     if (!open_file(filename, &file->fd))
         return FALSE;

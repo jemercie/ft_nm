@@ -1,7 +1,5 @@
 # include "nm.h"
 # include "regex_macros.h"
-# include <regex.h>
-# include <string.h>
 
 static int  regex_check_arg_type(char *arg);
 static void regex_set_full_name_options(bool *options, char *option);
@@ -13,6 +11,7 @@ int parse_options(t_options *options, char **argv){
 
     int nb_args = 0;
     ft_memset(options, 0, sizeof(t_options));
+
     for (int i = 1; argv[i]; i++){
         int ret = regex_check_arg_type(argv[i]);
         switch (ret)
@@ -33,6 +32,7 @@ int parse_options(t_options *options, char **argv){
     if (options->help){
         PRINT_USAGE_AND_EXIT(0);
     }
+
     return nb_args;
 }
 

@@ -2,10 +2,9 @@
 # define INCLUDE_H
 
 # include "macros.h"
-# include "errors.h"
-# include "print_macros.h"
+# include "print_errors_macros.h"
 
-#include <elf.h>         // Elf64_Ehdr, Elf32_Ehdr, EI_CLASS,
+# include <elf.h>        // Elf64_Ehdr, Elf32_Ehdr, EI_CLASS,
 # include <sys/stat.h>   // stat, fstat()
 # include <stdbool.h>    // bool type
 
@@ -75,7 +74,7 @@ bool        interpret_symbol_table_x64(t_file *file, t_options *options);
 bool        interpret_symbol_table_x32(t_file *file, t_options *options);
                     // find_and_print_symbol_table_x32
 
-t_symbol    *add_symbol_to_lst(char *name, uint64_t adress, char symbol, t_symbol *lst, t_options *options);
+void        add_symbol_to_lst(char *name, uint64_t adress, char symbol, t_symbol **lst, t_options *options);
                     // add_symbol_to_lst.c
 
 void        print_symbols_lst(t_symbol *lst, t_options *options, int padding_len);

@@ -15,6 +15,7 @@
         "macros.h": "c",
         "stat.h": "c",
         "stdio.h": "c",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "print_macros.h": "c"
     }
 }

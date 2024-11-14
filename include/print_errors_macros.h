@@ -1,14 +1,14 @@
 #ifndef PRINT_MACROS_H
 # define PRINT_MACROS_H
 
-# include "nm.h"
-
 #include <unistd.h> // write
 #include <stdlib.h> // exit
 
 # define PRINT_ERROR_OPENING_FILE(filename) \
 ft_putstr_fd(2, "ft_nm: '"); ft_putstr_fd(2, filename); \
 ft_putstr_fd(2, "': No such file\n");
+
+# define PRINT_ERROR_COMPILING_REGEX "An error occured compiling regex.\n"
 
 # define PRINT_SYMBOL_LINE(buffer, name)\
 ft_putstr_fd(1, buffer); ft_putstr_fd(1, name); write(1, "\n", 1)
@@ -31,7 +31,7 @@ ft_putstr_fd(2, "ft_nm: invalid option -- \'"); write(2, option, 1); ft_putstr_f
 # define PRINT_ERROR_NO_SYMBOL_AND_EXIT(filename) \
 ft_putstr_fd(2, "ft_nm: "); ft_putstr_fd(2, filename); ft_putstr_fd(2, ": no symbols\n"), exit(1)
 
-# define PUT_ERROR_WRONG_FILE_FORMAT(filename)\
+# define PRINT_ERROR_WRONG_FILE_FORMAT(filename)\
 ft_putstr_fd(2, "ft_nm: "); ft_putstr_fd(2, filename); ft_putstr_fd(2, ": file format not recognized\n")
 
 # define PRINT_USAGE_AND_EXIT(exit_code) \

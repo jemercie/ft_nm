@@ -1,12 +1,9 @@
 #include "nm.h"
-# include <sys/mman.h>
+# include <sys/mman.h> // munmap()
 
 /*
         TODO
-    - make the resolve symbol type function less ugly
-    - rm errors.h 
-    - put some complexity inside macros
-    - print and free lst
+
 */
 
 
@@ -46,7 +43,7 @@ static void open_and_map_file_and_interpret_elf(char *filename, t_file *file, t_
             interpret_symbol_table_x64(file, options);
             break;
         default:
-            PUT_ERROR_WRONG_FILE_FORMAT(filename);
+            PRINT_ERROR_WRONG_FILE_FORMAT(filename);
             break;
     }
 

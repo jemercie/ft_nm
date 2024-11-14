@@ -7,19 +7,20 @@ static void lst_add_node(t_symbol **lst, t_symbol *new);
 static void lst_add_node_sorted(t_symbol **lst, t_symbol *new, bool opt_r);
 
 
-t_symbol *add_symbol_to_lst(char *name, uint64_t adress, char symbol, t_symbol *lst, t_options *options){
+void add_symbol_to_lst(char *name, uint64_t adress, char symbol, t_symbol **lst, t_options *options){
                                                                     // tester si sh_shndx est pas plus grand
 
     if (options->extern_only && IS_LOCAL(symbol))
-        return lst;
+        return;
+        // return lst;
         
     t_symbol *new = new_symbol_lst_node(name, symbol, adress);
 
     if (options->no_sort)
-        lst_add_node(&lst, new);
+        lst_add_node(lst, new);
     else 
-        lst_add_node_sorted(&lst, new, options->reverse_sort);
-    return lst;
+        lst_add_node_sorted(lst, new, options->reverse_sort);
+    // return lst;
 }
 
 static t_symbol *new_symbol_lst_node(char *name, char symbol, uint64_t adress){

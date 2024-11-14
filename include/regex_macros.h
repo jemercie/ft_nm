@@ -1,6 +1,8 @@
 #ifndef REGEX_MACROS_H
 # define REGEX_MACROS_H
 
+# include <regex.h>
+
 # define NB_OF_ARG_TYPE 3
 # define NB_OF_OPTIONS 5
 
