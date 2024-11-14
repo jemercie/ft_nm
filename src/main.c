@@ -1,38 +1,36 @@
 #include "nm.h"
 # include <sys/mman.h> // munmap()
 
-/*
-        TODO
-
-*/
-
-
-static void open_and_map_file_and_interpret_elf(char *filename, t_file *file, t_options *options);
+static void open_and_map_file_and_interpret_elf(char *filename, t_file *file, t_options *options, int file_nb);
 
 
 int main(int argc, char **argv){
 
-    t_file file;
-    t_options options;
+    t_file      file;
+    t_options   options;
+    int         file_nb;
 
-    if (parse_options(&options, argv) == NO_FILE_ARG){
-        open_and_map_file_and_interpret_elf("a.out", &file, &options);
+    file_nb = parse_options(&options, argv);
+
+    if (file_nb == NO_FILE_ARG){
+        open_and_map_file_and_interpret_elf("a.out", &file, &options, file_nb);
         return END;
     }
 
     for (int i = 1; i < argc; i++){
-        open_and_map_file_and_interpret_elf(argv[i], &file, &options);
+        open_and_map_file_and_interpret_elf(argv[i], &file, &options, file_nb);
     }
     return END;
 }
-
-static void open_and_map_file_and_interpret_elf(char *filename, t_file *file, t_options *options){
+#include <stdio.h>
+static void open_and_map_file_and_interpret_elf(char *filename, t_file *file, t_options *options, int file_nb){
 
     if (!filename || !open_and_map_file(filename, file))
         return ;
-    
-    short       arch = file->file[EI_CLASS];
+    if (file_nb > 1)
+        PRINT_FILENAME(filename)
 
+    short       arch = file->file[EI_CLASS];
 
     switch (arch){
 

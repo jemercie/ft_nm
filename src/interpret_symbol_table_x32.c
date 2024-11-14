@@ -14,8 +14,8 @@ static int  get_symtab_index(Elf32_Ehdr *elf_header, Elf32_Shdr *section_hdr_tab
 
 bool interpret_symbol_table_x32(t_file *file, t_options *opt){
 
-    static t_elf32  elf;
     char            symbol;
+    static t_elf32  elf;
     t_symbol        *lst = NULL;
 
     init_elf_struct(file, &elf);
@@ -38,7 +38,6 @@ bool interpret_symbol_table_x32(t_file *file, t_options *opt){
         }
     }
     print_symbols_lst(lst, opt, PADDING_LEN_32);
-
     return TRUE;
 }
 

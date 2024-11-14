@@ -4,14 +4,17 @@
 #include <unistd.h> // write
 #include <stdlib.h> // exit
 
+# define PRINT_FILENAME(filename){ \
+write(1, "\n", 1); ft_putstr_fd(1, filename); write(1, ":\n",2);}
+
+# define PRINT_SYMBOL_LINE(buffer, name)\
+ft_putstr_fd(1, buffer); ft_putstr_fd(1, name); write(1, "\n", 1)
+
 # define PRINT_ERROR_OPENING_FILE(filename) \
 ft_putstr_fd(2, "ft_nm: '"); ft_putstr_fd(2, filename); \
 ft_putstr_fd(2, "': No such file\n");
 
 # define PRINT_ERROR_COMPILING_REGEX "An error occured compiling regex.\n"
-
-# define PRINT_SYMBOL_LINE(buffer, name)\
-ft_putstr_fd(1, buffer); ft_putstr_fd(1, name); write(1, "\n", 1)
 
 # define PRINT_ERROR_IS_A_DIRECTORY(filename) \
 ft_putstr_fd(2, "ft_nm: Warning: '"); ft_putstr_fd(2, filename); ft_putstr_fd(2, "' is a directory\n")
@@ -38,7 +41,6 @@ ft_putstr_fd(2, "ft_nm: "); ft_putstr_fd(2, filename); ft_putstr_fd(2, ": file f
 ft_putstr_fd(2, "Usage: nm [option(s)] [file(s)]\n\
  List symbols in [file(s)] (a.out by default).\n\
  The options are:\n\
-  -a, --debug-syms       Display debugger-only symbols\n\
   -g, --extern-only      Display only external symbols\n\
   -p, --no-sort          Do not sort the symbols\n\
   -r, --reverse-sort     Reverse the sense of the sort\n\

@@ -38,7 +38,6 @@ bool interpret_symbol_table_x64(t_file *file, t_options *opt){
         }
     }
     print_symbols_lst(lst, opt, PADDING_LEN_64);
-
     return TRUE;
 }
 

@@ -1,5 +1,6 @@
-#include "macros.h"
+
 #include "nm.h"
+#include "macros.h"
 #include "print_errors_macros.h"
 
 #include <sys/types.h>  // open()
