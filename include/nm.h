@@ -8,8 +8,6 @@
 # include <sys/stat.h>   // stat, fstat()
 # include <stdbool.h>    // bool type
 
-# define NO_FILE_ARG    0
-
 typedef struct  s_file{
 
     int         fd;
@@ -38,29 +36,8 @@ typedef struct  s_options{
     bool    help;
 }               t_options;
 
-typedef struct  s_elf32{
 
-    Elf32_Ehdr  *header;
-    Elf32_Shdr  *section_hdr;
-    int         symtab_index ;
-    Elf32_Sym   *symbol_table;
-    Elf32_Shdr  *strtab_section;
-    char *strtab;
-    size_t symbols_nb;
 
-}               t_elf32;
-
-typedef struct  s_elf64{
-
-    Elf64_Ehdr  *header;
-    Elf64_Shdr  *section_hdr;
-    int         symtab_index ;
-    Elf64_Sym   *symbol_table;
-    Elf64_Shdr  *strtab_section;
-    char *strtab;
-    size_t symbols_nb;
-
-}               t_elf64;
 
 bool        open_and_map_file(char *filename, t_file *file);
                     // open_and_map_file.c

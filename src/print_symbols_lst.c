@@ -1,6 +1,8 @@
 # include "nm.h"
 #include <stdlib.h> // malloc()
 
+# define HEX_DIGITS                              "0123456789abcdef"
+
 static char	*ft_int_to_hex_str(int num);
 static char *fill_padding_with_zeros_adress(short padding_len, uint64_t adress);
 static char *fill_padding_with_spaces(short padding_len);
@@ -65,9 +67,9 @@ static char *fill_padding_with_zeros_adress(short padding_len, uint64_t adress){
     short 		i 			= 0;
     char 		*adress_str = ft_int_to_hex_str(adress);
     int 		adress_len	= ft_strlen(adress_str);
-	static char buffer[PADDING_LEN_64 + 1];
+	static char buffer[PADDING_LEN_MAX + 1];
 
-	ft_memset(&buffer, 0, sizeof(char) * (PADDING_LEN_64 + 1));
+	ft_memset(&buffer, 0, sizeof(char) * (PADDING_LEN_MAX + 1));
     // if (adress_len < padding_len) -> error
 
     for (; i < (padding_len - adress_len - SYMBOL_PADDING); i++){
@@ -79,7 +81,7 @@ static char *fill_padding_with_zeros_adress(short padding_len, uint64_t adress){
 	for (int j = 0; j < SYMBOL_PADDING; j++, i++)
 		buffer[i+j]=' ';
 	
-	for (; i <= PADDING_LEN_64; i++)
+	for (; i <= PADDING_LEN_MAX; i++)
 		buffer[i] = '\0';
 	
 	free(adress_str);
@@ -90,7 +92,7 @@ static char *fill_padding_with_spaces(short padding_len){
 	
 	static char buffer[17];
 
-	ft_memset(&buffer, 0, sizeof(char) * (PADDING_LEN_64+1));
+	ft_memset(&buffer, 0, sizeof(char) * (PADDING_LEN_MAX+1));
 	ft_memset(&buffer, ' ', padding_len);
 	return (char *)&buffer;
 }

@@ -1,5 +1,5 @@
 #include "nm.h"
-#include <unistd.h>
+#include <unistd.h> // write()
 
 static bool     ft_isalnum(int c);
 static bool is_upper(char c);

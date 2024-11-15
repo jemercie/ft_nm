@@ -22,7 +22,7 @@ int main(int argc, char **argv){
     }
     return END;
 }
-#include <stdio.h>
+
 static void open_and_map_file_and_interpret_elf(char *filename, t_file *file, t_options *options, int file_nb){
 
     if (!filename || !open_and_map_file(filename, file))

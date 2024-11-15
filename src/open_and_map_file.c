@@ -17,7 +17,7 @@ bool open_and_map_file(char *filename, t_file *file){
 
     if (!filename)
         return FALSE;
-    memset(file, 0, sizeof(t_file));
+    ft_memset(file, 0, sizeof(t_file));
     if (!open_file(filename, &file->fd))
         return FALSE;
     if (!get_file_size(file))
