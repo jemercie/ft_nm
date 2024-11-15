@@ -32,7 +32,7 @@ ft_putstr_fd(2, "ft_nm: regcomp : an error occured compiling regex\n"); exit(1)
 ft_putstr_fd(2, "ft_nm: invalid option -- \'"); write(2, option, 1); ft_putstr_fd(2, "\'\n")
 
 # define PRINT_ERROR_NO_SYMBOL_AND_EXIT(filename) \
-ft_putstr_fd(2, "ft_nm: "); ft_putstr_fd(2, filename); ft_putstr_fd(2, ": no symbols\n"), exit(1)
+ft_putstr_fd(2, "ft_nm: "); ft_putstr_fd(2, filename); ft_putstr_fd(2, ": no symbols\n"), exit(0)
 
 # define PRINT_ERROR_WRONG_FILE_FORMAT(filename)\
 ft_putstr_fd(2, "ft_nm: "); ft_putstr_fd(2, filename); ft_putstr_fd(2, ": file format not recognized\n")

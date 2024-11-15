@@ -1,11 +1,11 @@
-[the test binaries are coming from here](https://github.com/leowz)
+[The test binaries are coming from here](https://github.com/leowz)
 
-put the tester inside your project folder
+Put the tester inside your project folder
 
 chmod +x run_tests.sh
 
 ./run for mandatory tests or ./run [bonus, memory, errors, all]
 
-you can decomment some lines in the mandatory and bonus scripts to see the diff function output
+You can decomment some lines in the ./srcs/test_mandatory.sh and ./srcs/test_bonus.sh scripts to see the diff function output
 
-you can modify srcs/test_bonus.txt adding or removing the flags you've done
+You can modify srcs/test_bonus.txt adding or removing the flags/options you've done
