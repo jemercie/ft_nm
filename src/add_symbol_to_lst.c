@@ -64,7 +64,7 @@ static void lst_add_node_sorted(t_symbol **lst, t_symbol *new, bool opt_r) {
 
     t_symbol *tmp = *lst;
 
-    if (strcmp_no_case(tmp->name, new->name, opt_r) >= 0) {
+    if (strcmp_no_case(tmp->name, new->name, opt_r) > 0) {
         new->next = tmp;
         *lst = new;
         return;

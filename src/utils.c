@@ -1,8 +1,9 @@
 #include "nm.h"
 #include <unistd.h> // write()
 
-static bool     ft_isalnum(int c);
+static bool ft_isalnum(int c);
 static bool is_upper(char c);
+static int  strcmp_case(char *s1, char *s2, bool opt_r);
 
 int strcmp_no_case(char *s1, char *s2, bool opt_r) {
     
@@ -28,24 +29,24 @@ int strcmp_no_case(char *s1, char *s2, bool opt_r) {
         if (c1 != c2)
             return (unsigned char)c1 - (unsigned char)c2;
     }
-    i = 0;
-    j = 0;
-    for (; (s1[i] && !ft_isalnum(s1[i])); i++)
-    ;
-    for (; (s2[j] && !ft_isalnum(s2[j])); j++)
-    ;
+    return (strcmp_case(s1, s2, opt_r));
 
-    if (i == j && i == 0){
-        if (_s1 > _s2)
+}
+
+static int strcmp_case(char *s1, char *s2, bool opt_r){
+
+    int i = 0, j = 0;
+
+    for (; s1[i] && s2[j]; i++, j++){
+    
+        for (; (s1[i] && !ft_isalnum(s1[i])); i++);
+        for (; (s2[j] && !ft_isalnum(s2[j])); j++);
+        if (i < j || s1[i] < s2[j])
+            return 1;
+        else if (i > j || s1[i] > s2[j])
             return 0;
-        return (opt_r ? 1 : 0);
+
     }
-    if (i < j)
-        return 1;
-    else if (s1[i] < s2[j])
-        return 1;
-    else if (i > j)
-        return 0;
     return ((opt_r) ? 1 : 0);
 }
 

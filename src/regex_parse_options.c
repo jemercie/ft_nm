@@ -94,7 +94,8 @@ static void regex_set_full_name_options(bool *options, char *option_arg){
 static bool regex_check_format(const char *tested_str, const char *regex){
 
     regex_t reg;
-
+    if (!regex || !tested_str)
+        return 0;
     if (regcomp(&reg, regex, REG_EXTENDED | REG_NOSUB) != 0){
         PRINT_ERROR_COMPILING_REGEX_AND_EXIT;
         exit(0);
