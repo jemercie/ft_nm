@@ -297,3 +297,6 @@ typedef struct elf64_sym {
 ```
 
     idk how to optimize flags(etc) checking, so i put them in kind of decressant occurence order
+
+if necessary, last binutils readelf 2.42 version is in ressources (for -X)
+< ./ressources/readelf -g --symbols -X filename >

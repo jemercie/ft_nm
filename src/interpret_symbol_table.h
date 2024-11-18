@@ -114,8 +114,9 @@ static bool symbol_is_read_only_data_section(Elfw(Shdr) *section_hdr){
         return TRUE;
     else if ((section_hdr->sh_flags & SHF_STRINGS) > 0)
         return TRUE;
-    else if (section_hdr->sh_type == SHT_PROGBITS && \
-             section_hdr->sh_flags == (SHF_ALLOC) )
+    else if (section_hdr->sh_type == SHT_PROGBITS &&( \
+            section_hdr->sh_flags == (SHF_ALLOC) ||
+            section_hdr->sh_flags == (SHF_ALLOC | SHF_MERGE)))
         return TRUE;
 
     return FALSE;

@@ -27,7 +27,7 @@ static void print_lst(t_symbol *lst, short padding_len){
 
     while (symbol){
 
-        if (symbol->symbol == 'U' || symbol->symbol == 'w')
+        if (SYMBOL_IS_UNDEF(symbol))
 			buffer = fill_padding_with_spaces(padding_len);
         else
 			buffer = fill_padding_with_zeros_adress(padding_len, symbol->adress);
@@ -50,7 +50,7 @@ static void recursive_print_lst(t_symbol *lst, short padding_len){
 	if (symbol->next)
 		recursive_print_lst(symbol->next, padding_len);
 
-    if (symbol->symbol == 'U' || symbol->symbol == 'w')
+    if (SYMBOL_IS_UNDEF(symbol))
 		buffer = fill_padding_with_spaces(padding_len);
     else
 		buffer = fill_padding_with_zeros_adress(padding_len, symbol->adress);
