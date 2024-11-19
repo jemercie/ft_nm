@@ -60,7 +60,8 @@ static char resolve_symbol_type(Elfw(Sym)   *symbol_table, Elfw(Shdr) *section_h
         return SH_INDEX(symbol_table) == SHN_UNDEF ? 'w' : 'W';
     }
     else if (section_hdr && (SH_TYPE(symbol_table) == SHT_PROGBITS)&& \
-                SH_FLAG(section_hdr) == (SHF_ALLOC | SHF_EXECINSTR))
+                (SH_FLAG(section_hdr) == (SHF_ALLOC | SHF_EXECINSTR)||
+                 SH_FLAG(section_hdr) == (SHF_ALLOC | SHF_EXECINSTR | SHF_GROUP)))
         return 'T';
     else if (SH_INDEX(symbol_table) == SHN_UNDEF)
         return 'U';
