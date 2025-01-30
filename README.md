@@ -102,7 +102,7 @@ _Uppercase is **External** symbol_
 The ELF header defines whether to use _32-bit_ or _64-bit_ addresses. The header contains three fields that are affected by this setting and offset other fields that follow them. The ELF header is **52 bytes long for 32-bit binaries** or **64 bytes long for 64-bit binaries.**
 
 Struct  **Elf64/32_Ehdr** containing file's metadata
-```
+```c
 typedef struct elf64_hdr {
   unsigned char e_ident[EI_NIDENT];  /* explain how the elf file need to be parsed */
   Elf64_Half    e_type;              /* specifies the type of the ELF file */
@@ -164,7 +164,7 @@ entries (**e_phnum**)
 #### Program header
 _Describing zero or more memory segments_
 >
-```
+```c
 typedef struct elf64_phdr {
 Elf64_Word p_type;
 Elf64_Word p_flags;
